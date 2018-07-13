@@ -1,0 +1,76 @@
+
+  <div *ngIf="huSel" class="infoHu">
+      <form (ngSubmit)="cambiaHu()">
+        <h2>User Objective</h2>
+        <div class="form-group">
+          <label for="nombreInput">Name:</label>
+          <input type="text" class="form-control" id="nombreInput"
+          [(ngModel)]="hu.nombre" name="nombre">
+        </div>
+        <div class="form-group">
+          <label for="descripcionInput">Description:</label>
+          <textarea type="text" class="form-control" id="descripcionInput"
+          [(ngModel)]="hu.descripcion" name="descripcion"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="iteracionInput">Iteration:</label>
+          <input type="text" class="form-control" id="iteracionInput"
+          [(ngModel)]="hu.iteracion" name="iteracion">
+        </div>
+        <div class="form-group">
+          <label for="tipoInput">Type:</label>
+          <select id="tipoInput" class="form-control" [(ngModel)]="hu.tipo" [ngModelOptions]="{standalone: true}">
+            <option *ngFor="let tipo of tipos" [ngValue]="tipo">{{tipo}}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="tareaInput">Tasks:</label>
+          <input type="text" class="form-control" id="tareaInput"
+          [(ngModel)]="hu.tareas" name="tareas">
+        </div>
+        <!-- <div class="checkbox">
+          <label><input type="checkbox" value="">Initial prototype</label>
+        </div>
+        <div class="checkbox">
+          <label><input type="checkbox" value="">Advanced prototype</label>
+        </div>
+        <div class="checkbox">
+          <label><input type="checkbox" value="">Complete program</label>
+        </div> -->
+        <button type="submit" class="btn btn-primary">Apply changes</button>
+      </form>
+    </div>
+    
+    
+    <div *ngIf="!huSel" class="creaHu">
+        <form #formulario="ngForm" (ngSubmit)="creaHu(formulario)">
+              <h2>Create User Objective</h2>
+              <div class="form-group">
+                <label for="nombreInput">Name:</label>
+                <input type="text" class="form-control" id="nombreInput" placeholder="Name of the User Goal"
+                 ngModel name="nombre">
+              </div>
+              <div class="form-group">
+                <label for="descripcionInput">Description:</label>
+                <textarea type="text" class="form-control" id="descripcionInput" placeholder="Description of the User Goal"
+                ngModel name="descripcion"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="iteracionInput">Iteration:</label>
+                <input type="text" class="form-control" id="iteracionInput" placeholder="Iteration number"
+                ngModel name="iteracion">
+              </div>
+              <div class="form-group">
+                <label for="tipoInput">Type:</label>
+                <select id="tipoInput" class="form-control" ngModel name="tipo">
+                  <option *ngFor="let tipo of tipos" [ngValue]="tipo">{{tipo}}</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="tareaInput">Tasks:</label>
+                <input type="text" class="form-control" id="tareaInput" placeholder="Tasks of the User Goal"
+                ngModel name="tareas">
+              </div>
+              <button type="submit" class="btn btn-primary">Create User Goal</button>
+        </form>
+  </div>

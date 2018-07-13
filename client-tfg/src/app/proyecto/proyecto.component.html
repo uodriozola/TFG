@@ -1,0 +1,15 @@
+<div *ngIf="proyecto" class="proyecto">
+  <div class="titulo jumbotron">
+    <h1>{{proyecto.nombre}}</h1>
+    <p>{{proyecto.descripcion}}</p>
+  </div>
+  <div class="botonIteraciones">
+      <button type="button" class="btn btn-primary" (click)="addIteration()">Add Iteration</button>
+  </div>
+  <div class="grafico">
+    <app-grafico id="grafico" [proyectoID]="proyecto._id"></app-grafico>
+  </div>
+  <div class="detalles">
+    <app-detalles [proyectoID]="proyecto._id"></app-detalles>
+  </div>
+</div>
