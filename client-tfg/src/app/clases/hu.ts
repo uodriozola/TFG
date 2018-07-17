@@ -14,8 +14,8 @@ export class HistoriaUsuario {
 
 
   // Constructor (obligatorio que tenga proyectoID, resto de parámetros opcionales)
-  constructor (proyectoID: String, _id?: String, posX?: Number, posY?: Number, numero?: number, nombre?: String,
-    descripcion?: String, tipo?: String, tareas?: String[], iteracion?: number, padres?: String[]) {
+  constructor (proyectoID: String, _id?: String, posX?: Number, posY?: Number, numero?: number, iteracion?: number,
+    nombre?: String, descripcion?: String, tipo?: String, tareas?: String[], padres?: String[]) {
     this.proyectoID = proyectoID;
 
     this._id = _id;

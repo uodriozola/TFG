@@ -4,6 +4,30 @@ var Iteracion = require('../modelos/iteracion');
 // var Hu = require('../modelos/hu');
 var Proyecto = require('../modelos/proyecto');
 
+function getIteracion(req, res) {
+    var iteracionId = req.params.numero;
+
+    var find = Iteracion.findOne( { numero: iteracionId});
+
+    find.exec((err, iteracion) => {
+        if(err) {
+            res.status(500).send({message: "Error en la petición"});
+        } else {
+            if(!iteracion) {
+                res.status(404).send({message: "No existe la Iteración"});
+            } else {
+                Proyecto.populate(iteracion, {path: 'proyecto'}, (err, iteracion) => {
+                    if(err) {
+                        res.status(500).send({message: "Error en la petición"});
+                    } else {
+                        res.status(200).send({iteracion});
+                    }
+                });
+            }
+        }
+    });
+}
+
 function getIteraciones(req, res) {
     var proyectoId = req.params.proyecto;
 
@@ -77,6 +101,7 @@ function updateIteracion(req, res) {
 }
 
 module.exports = {
+    getIteracion,
     getIteraciones,
     saveIteracion,
     updateIteracion

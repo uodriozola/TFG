@@ -42,6 +42,21 @@ export class IteracionService {
       });
   }
 
+   // Coge de la BD la iteración pasada como parámetro
+   getIteracion(iteracionID: String): Observable<Iteracion> {
+    return this._http.get(this.url + '/iteracion/' + iteracionID)
+      .map(res => res.json()).map(
+        response => {
+          return response.iteracion;
+        },
+      error => {
+        this.errorMessage = <any>error;
+        if (this.errorMessage != null) {
+          console.log(this.errorMessage);
+        }
+      });
+  }
+
   // Añade una iteración a la BD
   addIteracion(iteracion: Iteracion) {
     const json = JSON.stringify(iteracion);

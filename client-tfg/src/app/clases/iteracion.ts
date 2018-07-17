@@ -1,4 +1,5 @@
 export interface Iteracion {
+    _id: String;
     numero: number;
     nombre: String;
     descripcion: String;
