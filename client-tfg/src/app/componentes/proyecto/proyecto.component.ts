@@ -1,13 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params} from '@angular/router';
 
-import { ProyectoService } from '../clases/proyecto.service';
-import { Proyecto } from '../clases/proyecto';
+import { ProyectoService } from '../../servicios/proyecto.service';
+import { Proyecto } from '../../clases/proyecto';
 
-import { HuService } from '../clases/hu.service';
-import { HistoriaUsuario } from '../clases/hu';
+import { HuService } from '../../servicios/hu.service';
+import { HistoriaUsuario } from '../../clases/hu';
 
-import { LogicaHuService } from '../clases/logica-hu.service';
+import { LogicaHuService } from '../../servicios/logica-hu.service';
 
 @Component({
   selector: 'app-proyecto',
@@ -54,7 +54,6 @@ export class ProyectoComponent implements OnInit {
   }
 
   addIteration() {
-    console.log('Desde el otro');
     this.logicaService.addIteration();
   }
 

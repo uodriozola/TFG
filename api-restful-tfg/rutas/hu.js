@@ -9,6 +9,7 @@ api.get('/hus/hijos/:proyecto/:id', huControlador.getHijosTipo);
 api.get('/hus/padres/:proyecto/:id', huControlador.getTipoPadres);
 api.post('/hu/:proyecto', huControlador.saveHu);
 api.get('/hus/:proyecto?', huControlador.getHus);
+api.get('/hus/:proyecto/:iteracion', huControlador.getHusIter);
 api.put('/hu/:id', huControlador.updateHu);
 api.delete('/hu/:id', huControlador.deleteHu);
 

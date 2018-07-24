@@ -1,8 +1,5 @@
-export class Proyecto {
-    public _id: String;
-    public nombre: String;
-    public descripcion: String;
-    constructor() {
-
-    }
+export interface Proyecto {
+    _id: String;
+    nombre: String;
+    descripcion: String;
 }

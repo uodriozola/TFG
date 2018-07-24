@@ -4,8 +4,8 @@ import { Http, Response, Headers } from '@angular/http';
 import 'rxjs/add/operator/map';
 import { Observable } from 'rxjs/Observable';
 
-import { Proyecto } from './proyecto';
-import { GLOBAL } from './global';
+import { Proyecto } from '../clases/proyecto';
+import { GLOBAL } from '../clases/global';
 
 @Injectable()
 export class ProyectoService {

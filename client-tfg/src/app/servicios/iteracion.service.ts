@@ -4,8 +4,8 @@ import { Http, Response, Headers } from '@angular/http';
 import 'rxjs/add/operator/map';
 import { Observable } from 'rxjs/Observable';
 
-import { GLOBAL } from './global';
-import { Iteracion } from './iteracion';
+import { GLOBAL } from '../clases/global';
+import { Iteracion } from '../clases/iteracion';
 
 @Injectable()
 export class IteracionService {
@@ -63,6 +63,8 @@ export class IteracionService {
     const params = json;
     const headers = new Headers({'Content-Type': 'application/json'});
 
+    this.iteraciones.push(iteracion);
+
     return this._http.post(this.url + '/iteracion/' + iteracion.proyectoID, params, {headers: headers})
       .map(res => res.json());
   }
@@ -72,8 +74,21 @@ export class IteracionService {
     const json = JSON.stringify(iteracion);
     const params = json;
     const headers = new Headers({'Content-Type': 'application/json'});
+
+    const iter = this.iteraciones.findIndex( x => x.numero.toString() === iteracionID);
+    this.iteraciones.splice(iter, 1, iteracion);
+
     return this._http.put(this.url + '/iteracion/' + iteracionID, params, { headers: headers})
     .map(res => res.json());
+  }
+
+  // Borra una iteración de la BD
+  deleteIteracion(iteracionID: String) {
+    const iter = this.iteraciones.findIndex( x => x.numero.toString() === iteracionID);
+    this.iteraciones.splice(iter, 1);
+
+    return this._http.delete(this.url + '/iteracion/' + iteracionID)
+      .map(res => res.json());
   }
 
 }

@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 
 import {FormBuilder, FormGroup} from '@angular/forms';
-import { Proyecto } from '../clases/proyecto';
+import { Proyecto } from '../../clases/proyecto';
 
 @Component({
   selector: 'app-menubar',

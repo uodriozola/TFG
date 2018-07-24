@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params} from '@angular/router';
 
-import { ProyectoService } from '../clases/proyecto.service';
-import { Proyecto } from '../clases/proyecto';
+import { ProyectoService } from '../../servicios/proyecto.service';
+import { Proyecto } from '../../clases/proyecto';
 
 @Component({
   selector: 'app-inicio',

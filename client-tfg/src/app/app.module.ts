@@ -8,21 +8,21 @@ import { HttpClientModule } from '@angular/common/http';
 import { HttpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
-import { GraficoComponent } from './grafico/grafico.component';
-import { DetallesComponent } from './detalles/detalles.component';
+import { GraficoComponent } from './componentes/grafico/grafico.component';
+import { DetallesComponent } from './componentes/detalles/detalles.component';
 
-import { ProyectoService } from './clases/proyecto.service';
-import { HuService } from './clases/hu.service';
-import { IteracionService } from './clases/iteracion.service';
-import { MenubarComponent } from './menubar/menubar.component';
-import { InicioComponent } from './inicio/inicio.component';
-import { ProyectoComponent } from './proyecto/proyecto.component';
+import { ProyectoService } from './servicios/proyecto.service';
+import { HuService } from './servicios/hu.service';
+import { IteracionService } from './servicios/iteracion.service';
+import { MenubarComponent } from './componentes/menubar/menubar.component';
+import { InicioComponent } from './componentes/inicio/inicio.component';
+import { ProyectoComponent } from './componentes/proyecto/proyecto.component';
 import { AppRoutingModule } from './/app-routing.module';
-import { AddProyectoComponent } from './add-proyecto/add-proyecto.component';
+import { AddProyectoComponent } from './componentes/add-proyecto/add-proyecto.component';
 
 import { ConfirmationPopoverModule } from 'angular-confirmation-popover';
-import { LogicaHuService } from './clases/logica-hu.service';
-import { ContadorService } from './clases/contador.service';
+import { LogicaHuService } from './servicios/logica-hu.service';
+import { ContadorService } from './servicios/contador.service';
 
 
 

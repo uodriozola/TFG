@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs/Subject';
-import { HistoriaUsuario } from './hu';
+import { HistoriaUsuario } from '../clases/hu';
 
 @Injectable()
 export class LogicaHuService {
@@ -9,6 +9,8 @@ export class LogicaHuService {
   huDetallesCambio: Subject<String> = new Subject<String>();
   huDetallesCreado: Subject<String> = new Subject<String>();
   nuevaIteracion: Subject<String> = new Subject<String>();
+  detallesIteracion: Subject<String> = new Subject<String>();
+  eliminaIteracion: Subject<String> = new Subject<String>();
 
   constructor() { }
 
@@ -32,6 +34,16 @@ export class LogicaHuService {
     this.nuevaIteracion.next();
   }
 
+  // Me sirve para saber que se ha añadido una nueva Iteración
+  detallesIteration(iterID: String) {
+    this.detallesIteracion.next(iterID);
+  }
+
+  // Me sirve para saber que se ha eliminado una iteración
+  eliminaIteration(iterID: String) {
+    this.eliminaIteracion.next(iterID);
+  }
+
   // Decide el tipo de la HU y modifica el del hermano en caso de que sea Warning
   public setTipo(nuevoPadre: HistoriaUsuario, hijo: HistoriaUsuario,
     hermanos: HistoriaUsuario[], padres: HistoriaUsuario[]): HistoriaUsuario[] {
@@ -43,15 +55,15 @@ export class LogicaHuService {
       hijo.tipo = 'Warning';
       // Si tiene más de un padre y ninguna es Increment entonces es Fusión
     } else if (hijo.padres.length > 1 && padres.filter(padre => (padre.tipo === 'Increment')).length === 0 &&
-      nuevoPadre.tipo !== 'Increment') {
+      nuevoPadre.tipo !== 'Increment' && hijo.tipo !== 'Division') {
       hijo.tipo = 'Fusion';
       // Si tiene un padre tipo Incremento y otro que no,  es Incrementado
     } else if ((padres.filter(padre => (padre.tipo === 'Increment')).length > 0 || nuevoPadre.tipo === 'Increment') &&
-      (padres.filter(padre => (padre.tipo !== 'Increment')).length > 0 || nuevoPadre.tipo !== 'Increment')) {
+      (padres.filter(padre => (padre.tipo !== 'Increment')).length > 0 || nuevoPadre.tipo !== 'Increment') && hijo.tipo !== 'Division') {
       hijo.tipo = 'Incremented';
-    } else if (hijo.padres.length === 1 && hermanos.length > 0) { // Si tiene un padre y tiene hermanos es División
+      // Si tiene un padre y tiene hermanos es División
+    } else if (hijo.padres.length === 1 && (hermanos.length > 1 || hermanos[0].tipo === 'Warning')) {
       hijo.tipo = 'Division';
-      console.log(hermanos[0].tipo);
       if (hermanos[0].tipo === 'Warning') {
         hermanos[0].tipo = 'Division';
         res.push(hermanos[0]);

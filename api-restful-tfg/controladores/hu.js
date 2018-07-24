@@ -56,6 +56,31 @@ function getHus(req, res) {
     });
 }
 
+function getHusIter(req, res) {
+    var proyectoId = req.params.proyecto;
+    var iteracionId = req.params.iteracion;
+
+    var find = Hu.find({proyecto: proyectoId, iteracion: iteracionId}).sort('nombre');
+
+    find.exec((err, hus) => {
+        if(err) {
+            res.status(500).send({message: "Error en la petición"});
+        } else {
+            if(!hus) {
+                res.status(404).send({message: "No hay Historias de Usuario en este proyecto"});
+            } else {
+                Proyecto.populate(hus, {path: 'proyecto'}, (err, hus) => {
+                    if(err) {
+                        res.status(500).send({message: "Error en la petición"});
+                    } else {
+                        res.status(200).send({hus});
+                    }
+                });
+            }
+        }
+    });
+}
+
 function getHijosTipo(req, res) {
     var proyectoId = req.params.proyecto;
     var huID = req.params.id;
@@ -111,7 +136,10 @@ function saveHu(req, res) {
     hu.nombre = params.nombre;
     hu.descripcion = params.descripcion;
     hu.tipo = params.tipo;
-    //hu.tareas.push(params.tareas);
+    hu.a1 = params.a1;
+    hu.a2 = params.a2;
+    hu.a3 = params.a3;
+    hu.finalizado = params.finalizado;
     hu.iteracion = params.iteracion;
     hu.posX = params.posX;
     hu.posY = params.posY;
@@ -170,6 +198,7 @@ module.exports = {
     getTipoPadres,
     saveHu,
     getHus,
+    getHusIter,
     updateHu,
     deleteHu
 };

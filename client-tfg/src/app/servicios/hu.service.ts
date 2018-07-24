@@ -4,8 +4,8 @@ import { Http, Response, Headers } from '@angular/http';
 import 'rxjs/add/operator/map';
 import { Observable } from 'rxjs/Observable';
 
-import { HistoriaUsuario } from './hu';
-import { GLOBAL } from './global';
+import { HistoriaUsuario } from '../clases/hu';
+import { GLOBAL } from '../clases/global';
 
 @Injectable()
 export class HuService {
@@ -34,6 +34,21 @@ export class HuService {
         response => {
           this.hus = response.hus;
           this.proyectoID = proyectoId;
+        },
+      error => {
+        this.errorMessage = <any>error;
+        if (this.errorMessage != null) {
+          console.log(this.errorMessage);
+        }
+      });
+  }
+
+  // Coge de la BD todas las historias del usuario del proyecto pasado como parámetro de la iteración correspondiente
+  getHusIter(proyectoId = null, iteracion: Number) {
+    return this._http.get(this.url + '/hus/' + proyectoId + '/' + iteracion)
+      .map(res => res.json()).map(
+        response => {
+          return response.hus;
         },
       error => {
         this.errorMessage = <any>error;

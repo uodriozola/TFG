@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { InicioComponent } from './inicio/inicio.component';
-import { ProyectoComponent } from './proyecto/proyecto.component';
-import { AddProyectoComponent } from './add-proyecto/add-proyecto.component';
+import { InicioComponent } from './componentes/inicio/inicio.component';
+import { ProyectoComponent } from './componentes/proyecto/proyecto.component';
+import { AddProyectoComponent } from './componentes/add-proyecto/add-proyecto.component';
 
 const routes: Routes = [
   { path: 'inicio', component: InicioComponent },

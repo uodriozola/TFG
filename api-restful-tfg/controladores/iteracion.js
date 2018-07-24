@@ -33,10 +33,10 @@ function getIteraciones(req, res) {
 
     if(!proyectoId) {
         //Sacar todas las Iteraciones de la base de datos
-        var find = Iteracion.find({}).sort('nombre');
+        var find = Iteracion.find({}).sort('numero');
     } else {
         //Sacar las iteraciones asociadas al proyecto
-        var find = Iteracion.find({proyecto: proyectoId}).sort('nombre');
+        var find = Iteracion.find({proyecto: proyectoId}).sort('numero');
     }
 
     find.exec((err, iteraciones) => {
@@ -100,9 +100,28 @@ function updateIteracion(req, res) {
     });
 }
 
+function deleteIteracion(req, res) {
+    var iteracionId = req.params.id;
+
+    var find = Iteracion.findOneAndRemove( { numero: iteracionId});
+
+    find.exec((err, iteracionRemoved) => {
+        if(err) {
+            res.status(500).send({message: "Error al borrar la Iteración"});
+        } else {
+            if(!iteracionRemoved) {
+                res.status(404).send({message: "No se ha podido borrar la Iteración"});
+            } else {
+                res.status(200).send({iteracion: iteracionRemoved});
+            }
+        }
+    });
+}
+
 module.exports = {
     getIteracion,
     getIteraciones,
     saveIteracion,
-    updateIteracion
+    updateIteracion,
+    deleteIteracion
 };

@@ -1,0 +1,106 @@
+<div *ngIf="huSel" class="infoHu">
+  <form [formGroup]="formulario" (ngSubmit)="cambiaHu()">
+    <h2>User Objective</h2>
+    <div class="form-group">
+      <label for="nombreInput">Name:</label>
+      <input type="text" class="form-control" id="nombreInput" formControlName="nombre" name="nombre">
+    </div>
+    <div class="form-group">
+      <label for="descripcionInput">Description:</label>
+      <textarea type="text" class="form-control" id="descripcionInput" formControlName="descripcion" name="descripcion"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="iteracionInput">Iteration:</label>
+      <input type="text" class="form-control" id="iteracionInput" formControlName="iteracion" name="iteracion" readonly>
+    </div>
+    <div class="form-group">
+      <label for="tipoInput">Type:</label>
+      <select id="tipoInput" class="form-control" formControlName="tipo">
+        <option *ngFor="let tipo of tipos" [value]="tipo">{{tipo}}</option>
+      </select>
+    </div>
+    <div class="form-group">
+        <label>Tasks: </label>
+        <div class="form-check-inline">
+          <input class="form-check-input" type="checkbox" value="" name="a1" id="a1" formControlName="a1">
+          <label class="form-check-label" for="a1">
+            A1
+          </label>
+        </div>
+        <div class="form-check-inline">
+          <input class="form-check-input" type="checkbox" value="" name="a2" id="a2" formControlName="a2">
+          <label class="form-check-label" for="a2">
+            A2
+          </label>
+        </div>
+        <div class="form-check-inline">
+          <input class="form-check-input" type="checkbox" value="" name="a3" id="a3" formControlName="a3" >
+          <label class="form-check-label" for="a3">
+            A3
+          </label>
+        </div>
+        <div class="form-check-inline">
+          <input class="form-check-input" type="checkbox" value="" name="finalizado" id="finalizado" formControlName="finalizado">
+          <label class="form-check-label" for="finalizado">
+            Finalizado
+          </label>
+        </div>
+      </div>
+    <button type="submit" class="btn btn-primary" [disabled]="!formulario.valid">Apply changes</button>
+  </form>
+</div>
+
+
+<div *ngIf="!huSel" class="creaHu">
+  <form [formGroup]="formNuevo" (ngSubmit)="creaHu()">
+    <h2>Create User Objective</h2>
+    <div class="form-group">
+      <label for="nombreInput">Name:</label>
+      <input type="text" class="form-control" id="nombreInput" placeholder="Name of the User Goal" formControlName="nombre" name="nombre">
+    </div>
+    <div class="form-group">
+      <label for="descripcionInput">Description:</label>
+      <textarea type="text" class="form-control" id="descripcionInput" placeholder="Description of the User Goal" formControlName="descripcion" name="descripcion"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="iteracionInput">Iteration:</label>
+      <select id="iteracionInput" class="form-control" formControlName="iteracion" name="iteracion">
+        <option *ngFor="let iteracion of iteraciones" [value]="iteracion.numero">{{iteracion.numero}}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="tipoInput">Type:</label>
+      <select id="tipoInput" class="form-control" formControlName="tipo" name="tipo">
+        <option *ngFor="let tipo of tipos" [value]="tipo">{{tipo}}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Tasks: </label>
+      <div class="form-check-inline">
+        <input class="form-check-input" type="checkbox" value="" name="a1" id="a1" formControlName="a1">
+        <label class="form-check-label" for="a1">
+          A1
+        </label>
+      </div>
+      <div class="form-check-inline">
+        <input class="form-check-input" type="checkbox" value="" name="a2" id="a2" formControlName="a2">
+        <label class="form-check-label" for="a2">
+          A2
+        </label>
+      </div>
+      <div class="form-check-inline">
+        <input class="form-check-input" type="checkbox" value="" name="a3" id="a3" formControlName="a3">
+        <label class="form-check-label" for="a3">
+          A3
+        </label>
+      </div>
+      <div class="form-check-inline">
+        <input class="form-check-input" type="checkbox" value="" name="finalizado" id="finalizado" formControlName="finalizado">
+        <label class="form-check-label" for="finalizado">
+          Finalizado
+        </label>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary" [disabled]="!formNuevo.valid">Create User Goal</button>
+  </form>
+</div>

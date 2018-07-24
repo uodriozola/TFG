@@ -1,0 +1,16 @@
+<h1>New Proyect</h1>
+
+<form [formGroup]="formulario" (ngSubmit)="onSubmit()">
+  <div class="form-group">
+    <label for="nombreInput">Name:</label>
+    <input type="text" class="form-control" id="nombreInput" placeholder="Name of the Proyect" formControlName="nombre" name="nombre">
+  </div>
+  <div class="form-group">
+    <label for="descripcionInput">Description:</label>
+    <input type="text" class="form-control" id="descripcionInput" placeholder="Description of the Proyect" formControlName="descripcion"
+      name="descripcion">
+  </div>
+
+  <input type="submit" value="Create Proyect" [disabled]="!formulario.valid" />
+
+</form>
