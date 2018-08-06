@@ -34,7 +34,8 @@ export class InicioComponent implements OnInit {
   getProyectos() {
     this._proyectoService.getProyectos().subscribe(
       result => {
-        this.proyectos = result.proyectos;
+        console.log(result);
+        this.proyectos = result;
         if (!this.proyectos) {
           alert('Error en el servidor');
         }
@@ -50,7 +51,7 @@ export class InicioComponent implements OnInit {
   onDeleteProyecto(id) {
     this._proyectoService.deleteProyecto(id).subscribe(
       result => {
-        if (!result.proyecto) {
+        if (!result) {
           alert('Error en el servidor');
         }
         this.getProyectos();

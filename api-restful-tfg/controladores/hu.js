@@ -8,17 +8,17 @@ function getHu(req, res) {
     var huId = req.params.id;
 
     Hu.findById(huId, (err, hu) => {
-        if(err) {
-            res.status(500).send({message: "Error en la petición"});
+        if (err) {
+            res.status(500).send({ message: "Error en la petición" });
         } else {
-            if(!hu) {
-                res.status(404).send({message: "No existe la Historia de Usuario"});
+            if (!hu) {
+                res.status(404).send({ message: "No existe la Historia de Usuario" });
             } else {
-                Proyecto.populate(hu, {path: 'proyecto'}, (err, hu) => {
-                    if(err) {
-                        res.status(500).send({message: "Error en la petición"});
+                Proyecto.populate(hu, { path: 'proyecto' }, (err, hu) => {
+                    if (err) {
+                        res.status(500).send({ message: "Error en la petición" });
                     } else {
-                        res.status(200).send({hu});
+                        res.status(200).send(hu);
                     }
                 });
             }
@@ -29,26 +29,26 @@ function getHu(req, res) {
 function getHus(req, res) {
     var proyectoId = req.params.proyecto;
 
-    if(!proyectoId) {
+    if (!proyectoId) {
         //Sacar todas las hu de la base de datos
         var find = Hu.find({}).sort('nombre');
     } else {
         //Sacar las hu asociadas al proyecto
-        var find = Hu.find({proyecto: proyectoId}).sort('nombre');
+        var find = Hu.find({ proyecto: proyectoId }).sort('nombre');
     }
 
     find.exec((err, hus) => {
-        if(err) {
-            res.status(500).send({message: "Error en la petición"});
+        if (err) {
+            res.status(500).send({ message: "Error en la petición" });
         } else {
-            if(!hus) {
-                res.status(404).send({message: "No hay Historias de Usuario en este proyecto"});
+            if (!hus) {
+                res.status(404).send({ message: "No hay Historias de Usuario en este proyecto" });
             } else {
-                Proyecto.populate(hus, {path: 'proyecto'}, (err, hus) => {
-                    if(err) {
-                        res.status(500).send({message: "Error en la petición"});
+                Proyecto.populate(hus, { path: 'proyecto' }, (err, hus) => {
+                    if (err) {
+                        res.status(500).send({ message: "Error en la petición" });
                     } else {
-                        res.status(200).send({hus});
+                        res.status(200).send(hus);
                     }
                 });
             }
@@ -60,20 +60,20 @@ function getHusIter(req, res) {
     var proyectoId = req.params.proyecto;
     var iteracionId = req.params.iteracion;
 
-    var find = Hu.find({proyecto: proyectoId, iteracion: iteracionId}).sort('nombre');
+    var find = Hu.find({ proyecto: proyectoId, iteracion: iteracionId }).sort('nombre');
 
     find.exec((err, hus) => {
-        if(err) {
-            res.status(500).send({message: "Error en la petición"});
+        if (err) {
+            res.status(500).send({ message: "Error en la petición" });
         } else {
-            if(!hus) {
-                res.status(404).send({message: "No hay Historias de Usuario en este proyecto"});
+            if (!hus) {
+                res.status(404).send({ message: "No hay Historias de Usuario en este proyecto" });
             } else {
-                Proyecto.populate(hus, {path: 'proyecto'}, (err, hus) => {
-                    if(err) {
-                        res.status(500).send({message: "Error en la petición"});
+                Proyecto.populate(hus, { path: 'proyecto' }, (err, hus) => {
+                    if (err) {
+                        res.status(500).send({ message: "Error en la petición" });
                     } else {
-                        res.status(200).send({hus});
+                        res.status(200).send(hus);
                     }
                 });
             }
@@ -81,24 +81,24 @@ function getHusIter(req, res) {
     });
 }
 
-function getHijosTipo(req, res) {
+function getHijos(req, res) {
     var proyectoId = req.params.proyecto;
     var huID = req.params.id;
-    //Sacar los ID de las HU del proyecto que tienen de padre huID
-    var find = Hu.find( { proyecto: proyectoId, padres: huID }, ('_id', 'tipo'));
+    //Sacar los ID de las HU del proyecto que tienen de padre huID y su tipo
+    var find = Hu.find({ proyecto: proyectoId, padres: huID });
 
     find.exec((err, hus) => {
-        if(err) {
-            res.status(500).send({message: "Error en la petición"});
+        if (err) {
+            res.status(500).send({ message: "Error en la petición" });
         } else {
-            if(!hus) {
-                res.status(404).send({message: "No hay Historias de Usuario en este proyecto"});
+            if (!hus) {
+                res.status(404).send({ message: "No hay Historias de Usuario en este proyecto" });
             } else {
-                Proyecto.populate(hus, {path: 'proyecto'}, (err, hus) => {
-                    if(err) {
-                        res.status(500).send({message: "Error en la petición"});
+                Proyecto.populate(hus, { path: 'proyecto' }, (err, hus) => {
+                    if (err) {
+                        res.status(500).send({ message: "Error en la petición" });
                     } else {
-                        res.status(200).send({hus});
+                        res.status(200).send(hus);
                     }
                 });
             }
@@ -106,26 +106,25 @@ function getHijosTipo(req, res) {
     });
 }
 
-
-function getTipoPadres(req, res) {
+function getPadres(req, res) {
     var proyectoId = req.params.proyecto;
     var huID = req.params.id;
     //Sacar las HU que son padres de huID
     Hu.
-    find( { proyecto: proyectoId, _id: huID }, 'padres').
-    populate( 'padres', 'tipo').
-    exec((err, hus) => {
-        if(err) {
-            res.status(500).send({message: "Error en la petición"});
-        } else {
-            if(!hus) {
-                res.status(404).send({message: "No hay Historias de Usuario en este proyecto"});
-            } else {  
-                    res.status(200).send({hus});
-                   
+        find({ proyecto: proyectoId, _id: huID }, {'_id': 0, 'padres': 1}).
+        populate('padres').
+        exec((err, hus) => {
+            if (err) {
+                res.status(500).send({ message: "Error en la petición" });
+            } else {
+                if (!hus) {
+                    res.status(404).send({ message: "No hay Historias de Usuario en este proyecto" });
+                } else {
+                    res.status(200).send(hus[0].padres);
+
+                }
             }
-        }
-    });
+        });
 }
 
 function saveHu(req, res) {
@@ -136,24 +135,23 @@ function saveHu(req, res) {
     hu.nombre = params.nombre;
     hu.descripcion = params.descripcion;
     hu.tipo = params.tipo;
-    hu.a1 = params.a1;
-    hu.a2 = params.a2;
-    hu.a3 = params.a3;
-    hu.finalizado = params.finalizado;
+    hu.tareas.a1 = params.tareas.a1;
+    hu.tareas.a2 = params.tareas.a2;
+    hu.tareas.a3 = params.tareas.a3;
+    hu.tareas.finalizado = params.tareas.finalizado;
     hu.iteracion = params.iteracion;
     hu.posX = params.posX;
     hu.posY = params.posY;
-    //hu.padres.push(params.padres);
     hu.proyecto = params.proyectoID;
 
     hu.save((err, huStored) => {
-        if(err) {
-            res.status(500).send({message: "Error en la petición"});
+        if (err) {
+            res.status(500).send({ message: "Error en la petición" });
         } else {
-            if(!huStored) {
-                res.status(404).send({message: "No se ha guardado la Historia de Usuario"});
+            if (!huStored) {
+                res.status(404).send({ message: "No se ha guardado la Historia de Usuario" });
             } else {
-                res.status(200).send({hu: huStored});
+                res.status(200).send(huStored);
             }
         }
     });
@@ -164,38 +162,47 @@ function updateHu(req, res) {
     var update = req.body;
 
     Hu.findByIdAndUpdate(huId, update, (err, huUpdated) => {
-        if(err) {
-            res.status(500).send({message: "Error en la petición"});
+        if (err) {
+            res.status(500).send({ message: "Error en la petición" });
         } else {
-            if(!huUpdated) {
-                res.status(404).send({message: "No se ha actualizado la Historia de Usuario"});
+            if (!huUpdated) {
+                res.status(404).send({ message: "No se ha actualizado la Historia de Usuario" });
             } else {
-                res.status(200).send({hu: huUpdated});
+                res.status(200).send(huUpdated);
             }
         }
     });
 }
 
 function deleteHu(req, res) {
+    var proyectoId = req.params.proyecto;
     var huId = req.params.id;
 
-    Hu.findByIdAndRemove(huId, (err, huRemoved) => {
-        if(err) {
-            res.status(500).send({message: "Error al borrar la Historia de Usuario"});
+    Hu.find({ proyecto: proyectoId, padres: huId }, ('_id', 'tipo'), function (err, hijos) {
+        if (hijos.length === 0) {
+            Hu.findByIdAndRemove(huId, (err, huRemoved) => {
+                if (err) {
+                    res.status(500).send({ message: "Error al borrar la Historia de Usuario" });
+                } else {
+                    if (!huRemoved) {
+                        res.status(404).send({ message: "No se ha podido borrar la Historia de Usuario" });
+                    } else {
+                        res.status(200).send(huRemoved);
+                    }
+                }
+            });
         } else {
-            if(!huRemoved) {
-                res.status(404).send({message: "No se ha podido borrar la Historia de Usuario"});
-            } else {
-                res.status(200).send({hu: huRemoved});
-            }
+            res.status(200).send(undefined);
         }
     });
+
+    
 }
 
 module.exports = {
     getHu,
-    getHijosTipo,
-    getTipoPadres,
+    getHijos,
+    getPadres,
     saveHu,
     getHus,
     getHusIter,

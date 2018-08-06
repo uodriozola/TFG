@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Http, Response, Headers } from '@angular/http';
-import 'rxjs/add/operator/map';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 
 import { Proyecto } from '../clases/proyecto';
@@ -11,32 +10,28 @@ import { GLOBAL } from '../clases/global';
 export class ProyectoService {
   public url: String;
 
-  constructor(private _http: Http) {
+  constructor(private httpClient: HttpClient) {
     this.url = GLOBAL.url;
   }
 
-  getProyectos() {
-    return this._http.get(this.url + '/proyectos')
-      .map(res => res.json());
+  getProyectos(): Observable<Proyecto[]> {
+    return this.httpClient.get<Proyecto[]>(this.url + '/proyectos');
   }
 
-  getProyecto(id: String) {
-    return this._http.get(this.url + '/proyecto/' + id)
-      .map(res => res.json());
+  getProyecto(id: String): Observable<Proyecto> {
+    return this.httpClient.get<Proyecto>(this.url + '/proyecto/' + id);
   }
 
-  addProyecto(proyecto: Proyecto) {
+  addProyecto(proyecto: Proyecto): Observable<Proyecto> {
     const json = JSON.stringify(proyecto);
     const params = json;
-    const headers = new Headers({'Content-Type': 'application/json'});
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
 
-    return this._http.post(this.url + '/proyecto', params, {headers: headers})
-      .map(res => res.json());
+    return this.httpClient.post<Proyecto>(this.url + '/proyecto', params, {headers: headers});
   }
 
-  deleteProyecto(id: String) {
-    return this._http.delete(this.url + '/proyecto/' + id)
-      .map(res => res.json());
+  deleteProyecto(id: String): Observable<Proyecto> {
+    return this.httpClient.delete<Proyecto>(this.url + '/proyecto/' + id);
   }
 
 }

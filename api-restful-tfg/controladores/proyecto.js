@@ -14,7 +14,7 @@ function getProyecto(req, res) {
             if(!proyecto) {
                 res.status(404).send("El proyecto no existe");
             } else {
-                res.status(200).send({proyecto});
+                res.status(200).send(proyecto);
             }
         }
     });
@@ -29,7 +29,7 @@ function getProyectos(req, res) {
             if(!proyectos) {
                 res.status(404).send("No hay proyectos");
             } else {
-                res.status(200).send({proyectos});
+                res.status(200).send(proyectos);
             }
         }
     });
@@ -49,7 +49,7 @@ function saveProyecto(req, res) {
             if(!proyectoStored) {
                 res.status(404).send({message: "No se ha guardado el proyecto"});
             } else {
-                res.status(200).send({proyecto: proyectoStored});
+                res.status(200).send(proyectoStored);
             }
         }
     });
@@ -66,7 +66,7 @@ function updateProyecto(req, res) {
             if(!proyectoUpdated) {
                 res.status(404).send({message: "No se ha podido actualizar el proyecto"});
             } else {
-                res.status(200).send({proyecto: proyectoUpdated});
+                res.status(200).send(proyectoUpdated);
             }
         }
     });
@@ -84,7 +84,7 @@ function deleteProyecto(req, res) {
             } else {
                 Hu.remove({proyecto: proyectoId}).exec();
                 Iteracion.remove({proyecto: proyectoId}).exec();
-                res.status(200).send({proyecto: proyectoRemoved});
+                res.status(200).send(proyectoRemoved);
             }
         }
     });

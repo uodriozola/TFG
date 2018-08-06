@@ -39,7 +39,7 @@ export class ProyectoComponent implements OnInit {
       const id = params['id'];
       this._proyectoService.getProyecto(id).subscribe(
         result => {
-          this.proyecto = result.proyecto;
+          this.proyecto = result;
           if (!this.proyecto) {
             this._router.navigate(['/']);
           }

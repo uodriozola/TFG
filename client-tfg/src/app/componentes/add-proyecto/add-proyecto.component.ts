@@ -46,8 +46,8 @@ export class AddProyectoComponent implements OnInit {
     };
     this._proyectoService.addProyecto(this.proyecto).subscribe(
       response => {
-        this.proyecto = response.proyecto;
-        if (!response.proyecto) {
+        this.proyecto = response;
+        if (!response) {
           alert ('Error en el servidor');
         } else {
           this._router.navigate(['/']);

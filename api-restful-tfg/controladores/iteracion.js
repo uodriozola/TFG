@@ -5,9 +5,9 @@ var Iteracion = require('../modelos/iteracion');
 var Proyecto = require('../modelos/proyecto');
 
 function getIteracion(req, res) {
-    var iteracionId = req.params.numero;
+    var iteracionId = req.params.id;
 
-    var find = Iteracion.findOne( { numero: iteracionId});
+    var find = Iteracion.findOne( { _id: iteracionId});
 
     find.exec((err, iteracion) => {
         if(err) {
@@ -20,7 +20,7 @@ function getIteracion(req, res) {
                     if(err) {
                         res.status(500).send({message: "Error en la petición"});
                     } else {
-                        res.status(200).send({iteracion});
+                        res.status(200).send(iteracion);
                     }
                 });
             }
@@ -31,13 +31,8 @@ function getIteracion(req, res) {
 function getIteraciones(req, res) {
     var proyectoId = req.params.proyecto;
 
-    if(!proyectoId) {
-        //Sacar todas las Iteraciones de la base de datos
-        var find = Iteracion.find({}).sort('numero');
-    } else {
-        //Sacar las iteraciones asociadas al proyecto
-        var find = Iteracion.find({proyecto: proyectoId}).sort('numero');
-    }
+    //Sacar las iteraciones asociadas al proyecto
+    var find = Iteracion.find({proyecto: proyectoId}).sort('numero');
 
     find.exec((err, iteraciones) => {
         if(err) {
@@ -50,7 +45,7 @@ function getIteraciones(req, res) {
                     if(err) {
                         res.status(500).send({message: "Error en la petición"});
                     } else {
-                        res.status(200).send({iteraciones});
+                        res.status(200).send(iteraciones);
                     }
                 });
             }
@@ -77,7 +72,7 @@ function saveIteracion(req, res) {
             if(!iteracionStored) {
                 res.status(404).send({message: "No se ha guardado la Historia de Usuario"});
             } else {
-                res.status(200).send({iteracion: iteracionStored});
+                res.status(200).send(iteracionStored);
             }
         }
     });
@@ -94,7 +89,7 @@ function updateIteracion(req, res) {
             if(!iteracionUpdated) {
                 res.status(404).send({message: "No se ha actualizado la Historia de Usuario"});
             } else {
-                res.status(200).send({iteracion: iteracionUpdated});
+                res.status(200).send(iteracionUpdated);
             }
         }
     });
@@ -112,7 +107,7 @@ function deleteIteracion(req, res) {
             if(!iteracionRemoved) {
                 res.status(404).send({message: "No se ha podido borrar la Iteración"});
             } else {
-                res.status(200).send({iteracion: iteracionRemoved});
+                res.status(200).send(iteracionRemoved);
             }
         }
     });

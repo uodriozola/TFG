@@ -1,11 +1,13 @@
 import { Component, OnInit, OnDestroy, Input } from '@angular/core';
-import { FormGroup, Validators, FormBuilder } from '@angular/forms';
+import { FormGroup, Validators, FormBuilder, FormControl } from '@angular/forms';
 import { HistoriaUsuario } from '../../clases/hu'; // importo la clase HistoriaUsuario
 import { HuService } from '../../servicios/hu.service'; // importo el servicio HuService
 import { LogicaHuService } from '../../servicios/logica-hu.service';
 import { ContadorService } from '../../servicios/contador.service';
 import { IteracionService } from '../../servicios/iteracion.service';
 import { Iteracion } from '../../clases/iteracion';
+import { Validaciones } from '../../validaciones/validaciones';
+import { Tareas } from '../../clases/tareas';
 @Component({
   selector: 'app-detalles',
   templateUrl: './detalles.component.html',
@@ -28,6 +30,7 @@ export class DetallesComponent implements OnInit, OnDestroy {
   public hu: HistoriaUsuario = null;
   public huSel: Boolean = false;
   public tipos: String[] = ['Direct', 'Increment', 'Reused'];
+  public tareasDeshabilitados: Boolean[] = [true, true, true, true];
 
   constructor(private fb: FormBuilder,
     private huService: HuService,
@@ -48,15 +51,13 @@ export class DetallesComponent implements OnInit, OnDestroy {
     });
 
     // Actualizamos los detalles del nodo seleccionado
-    this.subscrib = this.logicaService.huSel.subscribe((huID) => {
+    this.subscrib = this.logicaService.huSel.subscribe((hu) => {
       this.tipos = null;
-      if (huID !== undefined) {
-        this.huService.getHu(huID).subscribe(hu => {
+      if (hu !== undefined) {
           this.huSel = true;
           this.hu = hu;
           this.comboTipo();
           this.cargarFormulario();
-        });
       } else {
         this.tipos = ['Direct', 'Increment', 'Reused'];
         this.huSel = false;
@@ -65,13 +66,11 @@ export class DetallesComponent implements OnInit, OnDestroy {
     });
 
     // Actualizamos el número de iteraciones que hay al añadir una nueva a la BD
-    this.subscrib1 = this.logicaService.detallesIteracion.subscribe((iterID) => {
-      this.iteracionService.getIteracion(iterID).subscribe(res => {
-        this.iteraciones.push(res);
-      });
+    this.subscrib1 = this.logicaService.detallesIteracion.subscribe((iter) => {
+        this.iteraciones.push(iter);
     });
     // Actualizamos el número de iteraciones que hay al eliminar una iteración
-    this.subscrib2 = this.logicaService.eliminaIteracion.subscribe((iterID) => {
+    this.subscrib2 = this.logicaService.eliminaIteracion.subscribe((iter) => {
       this.iteraciones.pop();
     });
   }
@@ -83,11 +82,12 @@ export class DetallesComponent implements OnInit, OnDestroy {
       descripcion: [this.hu.descripcion, Validators.compose([Validators.required])],
       iteracion: [this.hu.iteracion, Validators.compose([Validators.required])],
       tipo: [this.hu.tipo, Validators.compose([Validators.required])],
-      a1: [{ value: this.hu.a1, disabled: false }],
-      a2: [{ value: this.hu.a2, disabled: true }],
-      a3: [{ value: this.hu.a3, disabled: true }],
-      finalizado: [{ value: this.hu.finalizado, disabled: true }]
+      a1: [this.hu.tareas.a1],
+      a2: [this.hu.tareas.a2],
+      a3: [this.hu.tareas.a3],
+      finalizado: [this.hu.tareas.finalizado]
     });
+    this.formulario.setValidators([Validaciones.checkboxes('a1', 'a2', 'a3', 'finalizado')]);
   }
 
   cargarFormNuevo() {
@@ -106,13 +106,17 @@ export class DetallesComponent implements OnInit, OnDestroy {
 
   cambiaHu() {
     Object.assign(this.hu, this.formulario.value);
+    this.hu.tareas.a1 = this.formulario.get('a1').value;
+    this.hu.tareas.a2 = this.formulario.get('a2').value;
+    this.hu.tareas.a3 = this.formulario.get('a3').value;
+    this.hu.tareas.finalizado = this.formulario.get('finalizado').value;
     this.huService.updateHu(this.hu._id, this.hu).subscribe(nuevo => {
-      this.logicaService.detallesNodoCambio(this.hu._id);
+      this.logicaService.detallesNodoCambio(this.hu);
     });
   }
 
   creaHu() {
-    const iteracion = this.iteraciones.filter(iter => iter.numero === this.formNuevo.value.iteracion);
+    const iteracion = this.iteraciones.filter(iter => iter.numero.toString() === this.formNuevo.value.iteracion);
     this.contadorService.incrementa();
     this.hu = {
       proyectoID: this.proyectoID,
@@ -125,18 +129,21 @@ export class DetallesComponent implements OnInit, OnDestroy {
       numero: this.contadorService.contador,
       iteracion: this.formNuevo.value.iteracion,
       padres: [],
-      a1: this.formNuevo.value.a1,
-      a2: this.formNuevo.value.a2,
-      a3: this.formNuevo.value.a3,
-      finalizado: this.formNuevo.value.finalizado
+      tareas: {
+        a1: false,
+        a2: false,
+        a3: false,
+        finalizado: false
+      }
     };
     this.huService.addHu(this.hu).subscribe(
       response => {
-        this.huService.historiaUsuario = response.hu;
-        if (!response.hu) {
+        this.hu = response;
+        if (!response) {
           alert('Error en el servidor');
         } else {
-          this.logicaService.addHuDetalles(response.hu._id);
+          this.logicaService.addHuDetalles(response);
+          this.formNuevo.reset();
         }
       },
       error => {
@@ -148,8 +155,8 @@ export class DetallesComponent implements OnInit, OnDestroy {
   }
 
   comboTipo() {
-    this.huService.getHijosTipo(this.hu._id).subscribe(res => {
-      if (this.hu.padres.length === 0 && res.hus.length === 0) {
+    this.huService.getHijos(this.hu._id).subscribe(res => {
+      if (this.hu.padres.length === 0 && res.length === 0) {
         this.tipos = ['Direct', 'Increment', 'Reused'];
       } else {
         this.tipos = [this.hu.tipo];

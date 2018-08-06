@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Http, Response, Headers } from '@angular/http';
-import 'rxjs/add/operator/map';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 
 import { HistoriaUsuario } from '../clases/hu';
@@ -13,13 +12,10 @@ export class HuService {
   errorMessage: any;
 
   proyectoID: String;
-  hus: HistoriaUsuario[];
-  historiaUsuario: HistoriaUsuario;
   public url: String;
 
-  constructor(private _http: Http) {
+  constructor(private httpClient: HttpClient) {
     this.url = GLOBAL.url;
-    this.historiaUsuario = null;
   }
 
   getApiUrl(segmento = ''): String {
@@ -28,110 +24,63 @@ export class HuService {
   }
 
   // Coge de la BD todas las historias del usuario del proyecto pasado como parámetro
-  getHus(proyectoId = null) {
-    return this._http.get(this.url + '/hus/' + proyectoId)
-      .map(res => res.json()).map(
-        response => {
-          this.hus = response.hus;
-          this.proyectoID = proyectoId;
-        },
-      error => {
-        this.errorMessage = <any>error;
-        if (this.errorMessage != null) {
-          console.log(this.errorMessage);
-        }
-      });
+  getHus(proyectoId = null): Observable<HistoriaUsuario[]> {
+    this.proyectoID = proyectoId;
+    const ruta = this.url + '/hus/' + proyectoId;
+    return this.httpClient.get<HistoriaUsuario[]>(ruta);
   }
 
   // Coge de la BD todas las historias del usuario del proyecto pasado como parámetro de la iteración correspondiente
-  getHusIter(proyectoId = null, iteracion: Number) {
-    return this._http.get(this.url + '/hus/' + proyectoId + '/' + iteracion)
-      .map(res => res.json()).map(
-        response => {
-          return response.hus;
-        },
-      error => {
-        this.errorMessage = <any>error;
-        if (this.errorMessage != null) {
-          console.log(this.errorMessage);
-        }
-      });
+  getHusIter(proyectoId, iteracion: Number): Observable<HistoriaUsuario[]> {
+    const ruta = this.url + '/hus/' + proyectoId + '/' + iteracion;
+    return this.httpClient.get<HistoriaUsuario[]>(ruta);
   }
 
   // Cojo de la BD los ID de los hijos del proyecto cuyo ID paso como parámetro
-  public getHijosTipo(huID: String) {
-    return this._http.get(this.url + '/hus/hijos/' + this.proyectoID + '/' + huID)
-        .map(res => res.json()).map(
-          response => {
-            return response;
-        },
-        error => {
-          this.errorMessage = <any>error;
-          if (this.errorMessage != null) {
-            console.log(this.errorMessage);
-          }
-        });
+  public getHusTipo(hijoID: String, padreID: String): Observable<any[]> {
+    const ruta = this.url + '/hus/tipos/' + this.proyectoID + '/' + hijoID + '/' + padreID;
+    return this.httpClient.get<any[]>(ruta);
 }
 
-public getPadres(huID: String) {
-  return this._http.get(this.url + '/hus/padres/' + this.proyectoID + '/' + huID)
-      .map(res => res.json()).map(
-        response => {
-          return response.hus[0].padres;
-      },
-      error => {
-        this.errorMessage = <any>error;
-        if (this.errorMessage != null) {
-          console.log(this.errorMessage);
-        }
-      });
+  // Cojo de la BD los ID de los hijos del proyecto cuyo ID paso como parámetro
+  public getHijos(huID: String): Observable<HistoriaUsuario[]> {
+    const ruta = this.url + '/hus/hijos/' + this.proyectoID + '/' + huID;
+    return this.httpClient.get<HistoriaUsuario[]>(ruta);
+}
+
+// Cojo de la BD los ID de los padres del proyecto cuyo ID paso como parámetro
+public getPadres(huID: String): Observable<HistoriaUsuario[]> {
+  const ruta = this.url + '/hus/padres/' + this.proyectoID + '/' + huID;
+  return this.httpClient.get<HistoriaUsuario[]>(ruta);
 }
 
   // Coge de la BD la historia de usuario pasada como parámetro
-  getHu(huID: String): Observable<HistoriaUsuario> {
-    return this._http.get(this.url + '/hu/' + huID)
-      .map(res => res.json()).map(
-        response => {
-          this.historiaUsuario = response.hu;
-          return this.historiaUsuario;
-        },
-      error => {
-        this.errorMessage = <any>error;
-        if (this.errorMessage != null) {
-          console.log(this.errorMessage);
-        }
-      });
+  getHu(huID: String, padreId?: String): Observable<HistoriaUsuario> {
+    let ruta = this.url + '/hu/' + huID;
+    ruta = padreId !== undefined ? (ruta + '/' + padreId) : ruta;
+    return this.httpClient.get<HistoriaUsuario>(ruta);
   }
 
   // Añade una historia de usuario al array hus y a la BD
-  addHu(hu: HistoriaUsuario) {
-    this.hus.push(hu);
+  addHu(hu: HistoriaUsuario): Observable<HistoriaUsuario> {
     const json = JSON.stringify(hu);
     const params = json;
-    const headers = new Headers({'Content-Type': 'application/json'});
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
 
-    return this._http.post(this.url + '/hu/' + hu.proyectoID, params, {headers: headers})
-      .map(res => res.json());
+    return this.httpClient.post<HistoriaUsuario>(this.url + '/hu/' + hu.proyectoID, params, {headers: headers});
   }
 
   // Actualiza una historia de usuario en la BD
-  updateHu(huID: String, hu: HistoriaUsuario) {
+  updateHu(huID: String, hu: HistoriaUsuario): Observable<HistoriaUsuario> {
     const json = JSON.stringify(hu);
     const params = json;
-    const headers = new Headers({'Content-Type': 'application/json'});
-    return this._http.put(this.url + '/hu/' + huID, params, { headers: headers})
-    .map(res => res.json());
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+    return this.httpClient.put<HistoriaUsuario>(this.url + '/hu/' + huID, params, { headers: headers});
   }
 
   // Borra una historia de usuario del array hus y de la BD
-  deleteHu(huID: String) {
-    this.historiaUsuario = this.hus.find((item) => {
-      return item._id === huID;
-    });
-    this.hus.splice(this.hus.indexOf(this.historiaUsuario), 1);
-
-    return this._http.delete(this.url + '/hu/' + huID)
-      .map(res => res.json());
+  deleteHu(huID: String): Observable<HistoriaUsuario> {
+    return this.httpClient.delete<HistoriaUsuario>(this.url + '/hu/' + this.proyectoID + '/' + huID);
   }
 
 }

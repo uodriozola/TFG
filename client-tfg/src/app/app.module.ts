@@ -5,7 +5,6 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { HttpClientModule } from '@angular/common/http';
-import { HttpModule } from '@angular/http';
 
 import { AppComponent } from './app.component';
 import { GraficoComponent } from './componentes/grafico/grafico.component';
@@ -41,7 +40,6 @@ import { ContadorService } from './servicios/contador.service';
     BrowserModule,
     ReactiveFormsModule,
     HttpClientModule,
-    HttpModule,
     FormsModule,
     NgbModule.forRoot(),
     AppRoutingModule,

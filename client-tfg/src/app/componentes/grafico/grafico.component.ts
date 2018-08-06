@@ -3,12 +3,12 @@ import { HistoriaUsuario } from '../../clases/hu'; // importo la clase HistoriaU
 import { HuService } from '../../servicios/hu.service'; // importo el servicio husService
 import { LogicaHuService } from '../../servicios/logica-hu.service';
 import { ContadorService } from '../../servicios/contador.service';
-import { Proyecto } from '../../clases/proyecto';
-import { Params, ActivatedRoute } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 // tslint:disable-next-line:import-blacklist
 import { Observable } from 'rxjs';
 import { IteracionService } from '../../servicios/iteracion.service';
 import { Iteracion } from '../../clases/iteracion';
+import { options } from './options/options';
 declare var vis: any;
 
 @Component({
@@ -28,6 +28,8 @@ export class GraficoComponent implements OnInit, OnDestroy {
   subscrip2: any;
   subscrip3: any;
 
+  hu: HistoriaUsuario;
+  iteracion: Iteracion;
   iteraciones: Iteracion[] = [];
 
   errorMessage: any;
@@ -57,95 +59,21 @@ export class GraficoComponent implements OnInit, OnDestroy {
     this.contadorService.inicializa();
     this.contadorService.inicializaIt();
 
-    this.options = {
-      edges: {
-        color: 'grey',
-        arrows: {
-          to: { enabled: true, scaleFactor: 1 }
-        },
-        smooth: false
+    this.options = options;
+    this.options['manipulation'] = {
+      enabled: true,
+      deleteEdge: false,
+      editEdge: false,
+      addNode: (nodeData, callback) => {
+        this.añadeNodo(nodeData, callback);
       },
-      interaction: {
-        selectConnectedEdges: false,
-        multiselect: true
-      },
-      manipulation: {
-        enabled: true,
-        addNode: (nodeData, callback) => {
-          this.añadeNodo(nodeData);
-        },
-        addEdge: (nodeEdge, callback) => {
-          if (nodeEdge.from !== nodeEdge.to) {
-            this.añadeArista(nodeEdge, callback);
-          }
-        },
-        deleteNode: (nodeData, callback) => {
-          this.borraElemento(nodeData, callback);
+      addEdge: (nodeEdge, callback) => {
+        if (nodeEdge.from !== nodeEdge.to) {
+          this.añadeArista(nodeEdge, callback);
         }
       },
-      physics: {
-        hierarchicalRepulsion: {
-          nodeDistance: 0,
-          springConstant: 0
-        }
-      },
-      groups: {
-        Direct: {
-          shape: 'circularImage',
-          size: 15,
-          shapeProperties: { borderDashes: [0, 30] },
-          color: { background: 'white' },
-          image: '../assets/images/Directo.jpg'
-        },
-        Division: {
-          shape: 'circularImage',
-          size: 15,
-          shapeProperties: { borderDashes: [0, 30] },
-          color: { background: 'white' },
-          image: '../assets/images/Division.png'
-        },
-        Fusion: {
-          shape: 'circularImage',
-          size: 15,
-          shapeProperties: { borderDashes: [0, 30] },
-          color: { background: 'white' },
-          image: '../assets/images/Fusion.png'
-        },
-        Increment: {
-          shape: 'circularImage',
-          size: 15,
-          shapeProperties: { borderDashes: [0, 30] },
-          color: { background: 'white' },
-          image: '../assets/images/Incremento.jpeg'
-        },
-        Incremented: {
-          shape: 'circularImage',
-          size: 15,
-          shapeProperties: { borderDashes: [0, 30] },
-          color: { background: 'white' },
-          image: '../assets/images/Incrementado.png'
-        },
-        Reused: {
-          shape: 'circularImage',
-          size: 15,
-          shapeProperties: { borderDashes: [0, 30] },
-          color: { background: 'white' },
-          image: '../assets/images/Reutilizado.png'
-        },
-        Warning: {
-          color: { background: '#FF0000' }
-        },
-        Iteraciones: {
-          shape: 'circularImage',
-          size: 10,
-          color: {
-            border: 'grey',
-            background: 'white'
-          }
-        }
-      },
-      nodes: {
-        physics: false
+      deleteNode: (nodeData, callback) => {
+        this.borraElemento(nodeData, callback);
       }
     };
 
@@ -170,16 +98,35 @@ export class GraficoComponent implements OnInit, OnDestroy {
 
     // Paso a huService el nodo seleccionado si no es de tipo Iteraciones
     this.network.on('select', (params) => {
-      const node = this.nodes.get(params.nodes[0]);
-      if (node.id === 'flecha-izq' || node.id === 'flecha-der') {
-        this.selecItersLado(node);
-      } else if (node.group !== 'Iteraciones') {
-        this.logicaService.updateNodoSel(params.nodes[0]);
-      } else {
-        // Selecciono ambos nodos para mover la iteración en vertical
-        this.network.selectNodes([node.id, (+node.id * (-1)).toString()]);
-        this.nodes.update({ id: node.id, fixed: { y: false } });
-        this.nodes.update({ id: (+node.id * (-1)).toString(), fixed: { y: false } });
+        let node;
+        // Comprobamos si hay algún nodo que no sea de tipo OU seleccionado
+        const select = params.nodes.find(res => res === 'flecha-izq' || res === 'flecha-der' || !isNaN(+res));
+        // Si todos los nodos seleccionados son de tipo OU
+        if (select === undefined) {
+          node = this.nodes.get(params.nodes[0]);
+          this.iteracion = undefined;
+          if (node.id !== undefined) {
+            this.huService.getHu(node.id).subscribe(res => {
+              this.hu = res;
+              this.logicaService.updateNodoSel(this.hu);
+            });
+          } else {
+            this.hu = undefined;
+            this.logicaService.updateNodoSel(undefined);
+          }
+        } else {
+          node = this.nodes.get(select);
+          // Si se selecciona un nodo tipo flecha
+        if (node.id === 'flecha-izq' || node.id === 'flecha-der') {
+          this.selecItersLado(node);
+        } else /* Si se selecciona un nodo de tipo iteración */ {
+          this.iteracionService.getIteracion(this.nodes.get(Math.abs(node.id).toString()).brokenImage).subscribe(res => {
+            this.iteracion = res;
+          });
+          this.network.selectNodes([node.id, (+node.id * (-1)).toString()]);
+          this.nodes.update({ id: node.id, fixed: { y: false } });
+          this.nodes.update({ id: (+node.id * (-1)).toString(), fixed: { y: false } });
+        }
       }
     });
 
@@ -196,7 +143,10 @@ export class GraficoComponent implements OnInit, OnDestroy {
 
     // Guarda las nuevas posiciones de los nodos al moverlos y modifico su iteración si fuera necesario
     this.network.on('dragEnd', (params) => {
-      this.guardaPosiciones(params);
+      const posiciones = this.network.getPositions(params.nodes);
+      if (posiciones !== null) {
+        this.guardaPosiciones(posiciones);
+      }
     });
 
 
@@ -204,17 +154,30 @@ export class GraficoComponent implements OnInit, OnDestroy {
 
 
     // Actualizamos los detalles del nodo que se ha modificado en el componente de Detalles
-    this.subscrip1 = this.logicaService.huDetallesCambio.subscribe((huID) => {
-      this.huService.getHu(huID).subscribe(hu => {
-        this.nodes.update({ id: huID, label: hu.numero, group: hu.tipo });
+    this.subscrip1 = this.logicaService.huDetallesCambio.subscribe((hu) => {
+      let color;
+      if (hu.tipo === 'Warning') {
+        color = 'red';
+      } else {
+        color = this.logicaService.colorTarea(hu.tareas);
+      }
+      Observable.forkJoin(this.huService.getPadres(hu._id),
+      this.huService.getHijos(hu._id)).subscribe(res => {
+        const padres = res[0];
+        const hijos = res[1];
+        const cambios = this.logicaService.setTareas(hu, padres, hijos);
+        this.nodes.update({ id: hu._id, label: hu.numero, group: hu.tipo, color: { background: color } });
+        for (const cambio of cambios) {
+          this.huService.updateHu(cambio._id, cambio).subscribe(resul => {
+            this.nodes.update({ id: cambio._id, color: { background: color } });
+          });
+        }
       });
     });
 
     // Visualizamos en el gráfico la HU creada desde Detalles
-    this.subscrip2 = this.logicaService.huDetallesCreado.subscribe((huID) => {
-      this.huService.getHu(huID).subscribe(hu => {
-        this.nodes.add({ id: huID, label: hu.numero, group: hu.tipo, x: hu.posX, y: hu.posY });
-      });
+    this.subscrip2 = this.logicaService.huDetallesCreado.subscribe((hu) => {
+      this.nodes.add({ id: hu._id, label: hu.numero, group: hu.tipo, x: hu.posX, y: hu.posY });
     });
 
     // Creamos una nueva iteración al clicar en el botón correspondiente desde Proyecto
@@ -234,45 +197,37 @@ export class GraficoComponent implements OnInit, OnDestroy {
       this.iteracionService.getIteraciones(this.proyectoID))
       .subscribe(
         response => {
-          this.cargaOUs(this.huService.hus);
+          this.cargaOUs(response[0]);
           this.cargaIteraciones(response[1]);
-        },
-        error => {
-          this.errorMessage = <any>error;
-          if (this.errorMessage != null) {
-            console.log(this.errorMessage);
-          }
         });
   }
 
   // Carga las iteraciones de la BD, en caso de que no haya ninguna añade una primera automáticamente
   private cargaIteraciones(iteraciones: Iteracion[]) {
-    this.iteracionService.getIteraciones(this.proyectoID).subscribe(res => {
-      if (res.length !== 0) {
-        this.iteraciones = res;
-        // Añado las flechas en la posición correspondiente
-        this.creaFlechas(this.iteraciones.find(iteracion => iteracion.numero === 1));
-        for (const iteracion of iteraciones) {
-          this.contadorService.incrementaIt();
-          this.nodes.add({
-            id: iteracion.numero, group: 'Iteraciones', label: iteracion.numero, x: iteracion.posXder,
-            y: iteracion.posY, fixed: { y: true, x: true }, image: '../assets/images/der.png'
-          });
-          this.nodes.add({
-            id: '-' + iteracion.numero, group: 'Iteraciones', x: iteracion.posXizq,
-            y: iteracion.posY, fixed: { y: true, x: true }, image: '../assets/images/izq.png'
-          });
-          this.edges.add({
-            from: '-' + iteracion.numero, to: iteracion.numero,
-            color: 'grey', dashes: true, arrows: { to: { enabled: false } }
-          });
-        }
-      } else {
-        // Añado las flechas en la posición por defecto
-        this.creaFlechas(null);
-        this.addIteracion();
+    if (iteraciones.length !== 0) {
+      this.iteraciones = iteraciones;
+      // Añado las flechas en la posición correspondiente
+      this.creaFlechas(this.iteraciones.find(iteracion => iteracion.numero === 1));
+      for (const iteracion of iteraciones) {
+        this.contadorService.incrementaIt();
+        this.nodes.add({
+          id: iteracion.numero, group: 'Iteraciones', label: iteracion.numero, x: iteracion.posXder,
+          y: iteracion.posY, fixed: { y: true, x: true }, image: '../assets/images/der.png', brokenImage: iteracion._id
+        });
+        this.nodes.add({
+          id: '-' + iteracion.numero, group: 'Iteraciones', x: iteracion.posXizq,
+          y: iteracion.posY, fixed: { y: true, x: true }, image: '../assets/images/izq.png', brokenImage: '-' + iteracion._id
+        });
+        this.edges.add({
+          from: '-' + iteracion.numero, to: iteracion.numero,
+          color: 'grey', dashes: true, arrows: { to: { enabled: false } }
+        });
       }
-    });
+    } else {
+      // Añado las flechas en la posición por defecto
+      this.creaFlechas(null);
+      this.addIteracion();
+    }
   }
 
 
@@ -280,7 +235,13 @@ export class GraficoComponent implements OnInit, OnDestroy {
   private cargaOUs(historiasUsuario: HistoriaUsuario[]) {
     for (const hu of historiasUsuario) {
       this.contadorService.incrementa();
-      this.nodes.add({ id: hu._id, group: hu.tipo, label: hu.numero, x: hu.posX, y: hu.posY }); // relleno el DataSet de nodes
+      let color;
+      if (hu.tipo === 'Warning') {
+        color = 'red';
+      } else {
+        color = this.logicaService.colorTarea(hu.tareas);
+      }
+      this.nodes.add({ id: hu._id, group: hu.tipo, label: hu.numero, x: hu.posX, y: hu.posY, color: { background: color } });
       // relleno el Dataset de edges
       if (hu.padres !== undefined) {
         for (const padre of hu.padres) {
@@ -291,82 +252,59 @@ export class GraficoComponent implements OnInit, OnDestroy {
   }
 
   // Guarda el nodo creado como una nueva Historia de Usuario en la Base de Datos
-  private añadeNodo(nodo: any) {
+  private añadeNodo(nodo: any, callback: any) {
     this.contadorService.incrementa();
+    // Creo el objeto HU
     const hu = {
-      proyectoID: this.proyectoID,
-      nombre: 'Nuevo',
-      descripcion: 'Descripcion de Nuevo',
-      tipo: 'Direct',
-      _id: nodo.id,
-      posX: nodo.x,
-      posY: nodo.y,
-      numero: this.contadorService.contador,
-      iteracion: 0,
-      padres: [],
-      a1: false,
-      a2: false,
-      a3: false,
-      finalizado: false
+      proyectoID: this.proyectoID, nombre: 'Nuevo', descripcion: 'Descripcion de Nuevo',
+      tipo: 'Direct', _id: nodo.id, posX: nodo.x, posY: nodo.y,
+      numero: this.contadorService.contador, iteracion: 0, padres: [],
+      tareas: { a1: false, a2: false, a3: false, finalizado: false }
     };
+
     nodo.label = hu.numero;
     hu.iteracion = this.compruebaIteracion(hu);
-    this.huService.addHu(hu).subscribe(
-      response => {
-        this.huService.historiaUsuario = response.hu;
-        this.nodes.remove(nodo.id);
-        this.nodes.add({
-          id: this.huService.historiaUsuario._id, group: this.huService.historiaUsuario.tipo,
-          label: nodo.label, x: this.huService.historiaUsuario.posX,
-          y: this.huService.historiaUsuario.posY
-        });
-        if (!response.hu) {
-          alert('Error en el servidor');
-        } else {
-          // console.log('HU añadida');
-        }
-      },
-      error => {
-        this.errorMessage = <any>error;
-        if (this.errorMessage != null) {
-          console.log(this.errorMessage);
-        }
-      });
+    this.huService.addHu(hu).subscribe(response => {
+      this.hu = response;
+      nodo = { id: this.hu._id, group: this.hu.tipo, label: nodo.label, x: this.hu.posX, y: this.hu.posY };
+      if (!response) {
+        callback(null);
+      } else {
+        callback(nodo);
+      }
+    });
   }
 
   // Modifica el objeto de tipo HistoriaUsuario basándose en la arista pasada como parámetro
   private añadeArista(arista: any, callback: any) {
     Observable.forkJoin(this.huService.getHu(arista.to),
-      this.huService.getHu(arista.from)).subscribe(res => {
+      this.huService.getHu(arista.from),
+      this.huService.getHijos(arista.from),
+      this.huService.getPadres(arista.to)).subscribe(res => {
         const hijo = res[0];
         const padre = res[1];
-        Observable.forkJoin(this.huService.getHijosTipo(padre._id),
-          this.huService.getPadres(hijo._id)).subscribe(dev => {
-            const hermanos = dev[0].hus;
-            const padres = dev[1];
-            const nuevos = this.logicaService.setTipo(padre, hijo, hermanos, padres);
-            const tipo = this.nodes.get(arista.to).group;
-            console.log(tipo);
-            if (nuevos[0].tipo === tipo && nuevos[0].tipo !== 'Fusion' && nuevos[0].tipo !== 'Incremented') {
-              callback(null);
-            } else {
-              for (const nuevo of nuevos) {
-                this.nodes.update({ id: nuevo._id, group: nuevo.tipo });
-                this.huService.updateHu(nuevo._id, nuevo).subscribe(resul => {
-                });
-              }
-              // Actualizo los detalles en el momento
-              this.logicaService.updateNodoSel(undefined);
-              callback(arista);
-            }
-          });
-      },
-        error => {
-          this.errorMessage = <any>error;
-          if (this.errorMessage != null) {
-            console.log(this.errorMessage);
+        const hermanos = res[2];
+        const padres = res[3];
+      const nuevos = this.logicaService.setTipo(padre, hijo, hermanos, padres);
+      // Si el tipo devuelto no cumple los criterios establecidos no se crea la relación
+      const tipo = this.nodes.get(arista.to).group;
+      if (nuevos[0].tipo === tipo && nuevos[0].tipo !== 'Fusion' && nuevos[0].tipo !== 'Incremented') {
+        callback(null);
+      } else {
+        for (const nuevo of nuevos) {
+          if (nuevos[0].tipo !== 'Warning') {
+            this.nodes.update({ id: nuevo._id, group: nuevo.tipo, color: { background: this.logicaService.colorTarea(nuevo.tareas)}});
+          } else {
+            this.nodes.update({ id: nuevo._id, group: nuevo.tipo });
           }
-        });
+          this.huService.updateHu(nuevo._id, nuevo).subscribe(resul => {
+          });
+        }
+        // Actualizo los detalles en el momento
+        this.logicaService.updateNodoSel(undefined);
+        callback(arista);
+      }
+    });
   }
 
   // Decide si tiene que borrar una OU o una Iteración, en otro caso no realiza el borrado
@@ -382,36 +320,30 @@ export class GraficoComponent implements OnInit, OnDestroy {
 
   // Borra la OU hoja seleccionada de la Base de Datos
   private borraOU(nodo: any, callback: any) {
-    this.huService.getHijosTipo(nodo.nodes[0]).subscribe(hu => {
-      if (hu.hus.length === 0) {
-        this.huService.deleteHu(nodo.nodes[0]).subscribe(
-          response => {
-            this.contadorService.decrementa();
-            if (response.hu.padres[0] !== undefined) {
-              this.huService.getHijosTipo(response.hu.padres[0]).subscribe(res => {
-                if (res.hus.length === 1) {
-                  res.hus[0].tipo = 'Warning';
-                  this.huService.updateHu(res.hus[0]._id, res.hus[0]).subscribe(nuevo => {
-                    this.nodes.update({ id: res.hus[0]._id, group: 'Warning' });
-                  });
-                }
+    this.huService.deleteHu(nodo.nodes[0]).subscribe(response => {
+      if (response === null) {
+        callback(null);
+      } else {
+        this.contadorService.decrementa();
+        if (response.padres[0] !== undefined) {
+          this.huService.getHijos(response.padres[0]).subscribe(res => {
+            if (res.length === 1) {
+              res[0].tipo = 'Warning';
+              this.huService.updateHu(res[0]._id, res[0]).subscribe(nuevo => {
+                this.nodes.update({ id: res[0]._id, group: 'Warning' });
               });
             }
-            if (!response.hu) {
-              alert('Error en el servidor');
-            }
-            callback(nodo);
-          },
-          error => {
-            this.errorMessage = <any>error;
-            if (this.errorMessage != null) {
-              console.log(this.errorMessage);
-            }
           });
-      } else {
-        callback(null);
+        }
+        callback(nodo);
       }
-    });
+    },
+      error => {
+        this.errorMessage = <any>error;
+        if (this.errorMessage != null) {
+          console.log(this.errorMessage);
+        }
+      });
   }
 
   // Borra la Iteración hoja seleccionada de la Base de Datos
@@ -421,7 +353,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
       this.iteracionService.deleteIteracion(iteracion.toString()).subscribe(res => {
         this.contadorService.decrementaIt();
         this.iteraciones.pop();
-        this.logicaService.eliminaIteration(iteracion.toString());
+        this.logicaService.eliminaIteration(this.iteracion);
         // Modifico la iteración de los nodos que estaban en esa iteración
         this.huService.getHusIter(this.proyectoID, iteracion).subscribe(nodos => {
           nodos.forEach(n => {
@@ -438,91 +370,80 @@ export class GraficoComponent implements OnInit, OnDestroy {
   }
 
   // Guarda en la base de datos las posiciones de los nodos pasados como parámetro
-  private guardaPosiciones(params: any) {
-    const posiciones = this.network.getPositions(params.nodes);
-    if (posiciones != null) {
+  private guardaPosiciones(posiciones: any) {
       for (const pos of Object.keys(posiciones)) {
+        // Si es de tipo flecha (moviendose en horizontal)
         if (Object.keys(posiciones).filter(res => res === 'flecha-der' || res === 'flecha-izq').length > 0) {
           if (!isNaN(+pos)) {
-            const posAbs = Math.abs(+pos);
-            this.iteracionService.getIteracion(posAbs.toString()).subscribe(iter => {
-              if (+pos > 0) {
-                iter.posXder = posiciones[+pos].x;
-                this.nodes.update({ id: pos, x: iter.posXder });
+            this.guardaPosFlechas(pos, posiciones[pos]);
+          }
+          // Si es de tipo OU
+        } else if (isNaN(+pos)) {
+          this.guardaPosOU(pos, posiciones[pos]);
+        } else /* Si es de tipo iteración (moviendose en vertical) */ {
+          if (+pos > 0) {
+            this.guardaPosIter(pos, posiciones[pos]);
+          }
+        }
+      }
+  }
+
+  guardaPosFlechas(id: String, posicion: any) {
+    const posAbs = Math.abs(+id);
+            this.iteracionService.getIteracion(this.nodes.get(Math.abs(posAbs).toString()).brokenImage).subscribe(iter => {
+              if (+id > 0) {
+                iter.posXder = posicion.x;
+                this.nodes.update({ id: id, x: iter.posXder });
                 this.nodes.update({ id: 'flecha-der', x: iter.posXder });
               } else {
-                iter.posXizq = posiciones[+pos].x;
-                this.nodes.update({ id: pos, x: iter.posXizq });
+                iter.posXizq = posicion.x;
+                this.nodes.update({ id: id, x: iter.posXizq });
                 this.nodes.update({ id: 'flecha-izq', x: iter.posXizq });
               }
               this.iteracionService.updateIteracion(iter._id, iter).subscribe(nuevo => {
               });
-            },
-              error => {
-                this.errorMessage = <any>error;
-                if (this.errorMessage != null) {
-                  console.log(this.errorMessage);
-                }
-              });
-          }
-        } else if (isNaN(+pos)) {
-          this.huService.getHu(pos).subscribe(hu => {
-            const ou = hu;
-            ou.posX = posiciones[pos].x;
-            ou.posY = posiciones[pos].y;
-            this.nodes.update({ id: pos, x: ou.posX, y: ou.posY });
-            ou.iteracion = this.compruebaIteracion(ou);
-            this.huService.updateHu(pos, ou).subscribe(nuevo => {
-              // Actualizo los detalles en el momento
-              this.logicaService.updateNodoSel(params.nodes[0]);
             });
-          },
-            error => {
-              this.errorMessage = <any>error;
-              if (this.errorMessage != null) {
-                console.log(this.errorMessage);
-              }
-            });
-          // Si se trata de una iteración moviendose en vertical
-        } else {
-          if (+pos > 0) {
-            this.iteracionService.getIteracion(pos).subscribe(iter => {
-              // Compruebo si hay algún nodo que tenga que cambiar su iteración
-              Observable.forkJoin(this.huService.getHusIter(this.proyectoID, iter.numero),
-                this.huService.getHusIter(this.proyectoID, iter.numero - 1)).subscribe(res => {
-                  const actual = res[0];
-                  const anterior = res[1];
-                  // En los de la iteración actual miramos si pertenecen a la anterior
-                  res[0].forEach(n => {
-                    if (n.posY < posiciones[+pos].y) {
-                      n.iteracion -= 1;
-                      this.huService.updateHu(n._id, n).subscribe(nuevo => {
-                      });
-                    }
-                  });
-                  res[1].forEach(n => {
-                    if (n.posY > posiciones[+pos].y) {
-                      n.iteracion += 1;
-                      this.huService.updateHu(n._id, n).subscribe(nuevo => {
-                      });
-                    }
-                  });
-                });
-              iter.posY = posiciones[+pos].y;
-              this.iteracionService.updateIteracion(iter._id, iter).subscribe(nuevo => {
-                this.nodes.update({ id: pos, y: iter.posY });
-              });
-            },
-              error => {
-                this.errorMessage = <any>error;
-                if (this.errorMessage != null) {
-                  console.log(this.errorMessage);
-                }
-              });
-          }
+  }
+
+  guardaPosIter(id: String, posicion: any) {
+    // Compruebo si hay algún nodo que tenga que cambiar su iteración
+    Observable.forkJoin(this.huService.getHusIter(this.proyectoID, this.iteracion.numero),
+    this.huService.getHusIter(this.proyectoID, this.iteracion.numero - 1)).subscribe(res => {
+      // En los de la iteración actual miramos si pertenecen a la anterior
+      res[0].forEach(n => {
+        if (n.posY < posicion.y) {
+          n.iteracion -= 1;
+          this.huService.updateHu(n._id, n).subscribe(nuevo => {
+          });
         }
-      }
-    }
+      });
+      // En los de la iteración anterior miramos si ahora pertenecen a la actual
+      res[1].forEach(n => {
+        if (n.posY > posicion.y) {
+          n.iteracion += 1;
+          this.huService.updateHu(n._id, n).subscribe(nuevo => {
+          });
+        }
+      });
+    });
+  this.iteracion.posY = posicion.y;
+  this.iteracionService.updateIteracion(this.iteracion._id, this.iteracion).subscribe(nuevo => {
+    this.nodes.update({ id: id, y: this.iteracion.posY });
+  });
+  }
+
+  guardaPosOU(id: String, posicion: any) {
+    this.huService.getHu(id).subscribe(hu => {
+      const ou = hu;
+      ou.posX = posicion.x;
+      ou.posY = posicion.y;
+      this.nodes.update({ id: id, x: ou.posX, y: ou.posY });
+      ou.iteracion = this.compruebaIteracion(ou);
+      this.huService.updateHu(id, ou).subscribe(nuevo => {
+        // Actualizo los detalles en el momento
+        this.logicaService.updateNodoSel(ou);
+      });
+    });
   }
 
   // Añade una iteración
@@ -537,22 +458,6 @@ export class GraficoComponent implements OnInit, OnDestroy {
     }));
     const posXder = this.nodes.get('flecha-der').x;
     const posXizq = this.nodes.get('flecha-izq').x;
-    this.nodes.add({
-      id: this.contadorService.iteraciones, label: this.contadorService.iteraciones,
-      y: maxPosY + 70, x: posXder, fixed: { y: true, x: true }, group: 'Iteraciones',
-      image: '../assets/images/der.png'
-    });
-
-    this.nodes.add({
-      id: '-' + this.contadorService.iteraciones, y: maxPosY + 70, x: posXizq,
-      fixed: { y: true, x: true }, group: 'Iteraciones', image: '../assets/images/izq.png'
-    });
-
-    this.edges.add({
-      from: '-' + this.contadorService.iteraciones, to: this.contadorService.iteraciones,
-      color: 'grey', dashes: true, arrows: { to: { enabled: false } }
-    });
-
     const iteracion: Iteracion = {
       _id: this.contadorService.iteraciones.toString(),
       numero: this.contadorService.iteraciones,
@@ -563,18 +468,34 @@ export class GraficoComponent implements OnInit, OnDestroy {
       posY: maxPosY + 70,
       proyectoID: this.proyectoID
     };
-    // Si hay algún nodo por debajo de la iteración añadida se la modifico
-    this.huService.getHusIter(this.proyectoID, this.contadorService.iteraciones - 1).subscribe(iter => {
-      iter.forEach(n => {
-        if (n.posY > iteracion.posY) {
-          n.iteracion += 1;
-          this.huService.updateHu(n._id, n).subscribe(nuevo => {
-          });
-        }
-      });
-    });
     this.iteracionService.addIteracion(iteracion).subscribe(res => {
-      this.logicaService.detallesIteration(iteracion.numero.toString());
+      this.iteracion = res;
+      this.logicaService.detallesIteration(iteracion);
+      this.nodes.add({
+        id: this.contadorService.iteraciones, label: this.contadorService.iteraciones,
+        y: maxPosY + 70, x: posXder, fixed: { y: true, x: true }, group: 'Iteraciones',
+        image: '../assets/images/der.png', brokenImage: this.iteracion._id
+      });
+
+      this.nodes.add({
+        id: '-' + this.contadorService.iteraciones, y: maxPosY + 70, x: posXizq,
+        fixed: { y: true, x: true }, group: 'Iteraciones', image: '../assets/images/izq.png', brokenImage: '-' + this.iteracion._id
+      });
+
+      this.edges.add({
+        from: '-' + this.contadorService.iteraciones, to: this.contadorService.iteraciones,
+        color: 'grey', dashes: true, arrows: { to: { enabled: false } }
+      });
+      // Si hay algún nodo por debajo de la iteración añadida se la modifico
+      this.huService.getHusIter(this.proyectoID, this.contadorService.iteraciones - 1).subscribe(iter => {
+        iter.forEach(n => {
+          if (n.posY > iteracion.posY) {
+            n.iteracion += 1;
+            this.huService.updateHu(n._id, n).subscribe(nuevo => {
+            });
+          }
+        });
+      });
     });
   }
 

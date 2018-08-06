@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { Http, Response, Headers } from '@angular/http';
-import 'rxjs/add/operator/map';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 
 import { GLOBAL } from '../clases/global';
@@ -13,10 +12,9 @@ export class IteracionService {
   errorMessage: any;
 
   proyectoID: String;
-  iteraciones: Iteracion[];
   public url: String;
 
-  constructor(private _http: Http) {
+  constructor(private httpClient: HttpClient) {
     this.url = GLOBAL.url;
    }
 
@@ -26,69 +24,39 @@ export class IteracionService {
   }
 
    // Coge de la BD todas las iteraciones del proyecto pasado como parámetro
-  getIteraciones(proyectoId = null): Observable<Iteracion[]> {
-    return this._http.get(this.url + '/iteraciones/' + proyectoId)
-      .map(res => res.json()).map(
-        response => {
-          this.iteraciones = response.iteraciones;
-          this.proyectoID = proyectoId;
-          return this.iteraciones;
-        },
-      error => {
-        this.errorMessage = <any>error;
-        if (this.errorMessage != null) {
-          console.log(this.errorMessage);
-        }
-      });
+  getIteraciones(proyectoId): Observable<Iteracion[]> {
+    this.proyectoID = proyectoId;
+    const ruta = this.url + '/iteraciones/' + proyectoId;
+    return this.httpClient.get<Iteracion[]>(ruta);
   }
 
    // Coge de la BD la iteración pasada como parámetro
    getIteracion(iteracionID: String): Observable<Iteracion> {
-    return this._http.get(this.url + '/iteracion/' + iteracionID)
-      .map(res => res.json()).map(
-        response => {
-          return response.iteracion;
-        },
-      error => {
-        this.errorMessage = <any>error;
-        if (this.errorMessage != null) {
-          console.log(this.errorMessage);
-        }
-      });
+     const ruta = this.url + '/iteracion/' + iteracionID;
+    return this.httpClient.get<Iteracion>(ruta);
   }
 
   // Añade una iteración a la BD
-  addIteracion(iteracion: Iteracion) {
+  addIteracion(iteracion: Iteracion): Observable<Iteracion> {
     const json = JSON.stringify(iteracion);
     const params = json;
-    const headers = new Headers({'Content-Type': 'application/json'});
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
 
-    this.iteraciones.push(iteracion);
-
-    return this._http.post(this.url + '/iteracion/' + iteracion.proyectoID, params, {headers: headers})
-      .map(res => res.json());
+    return this.httpClient.post<Iteracion>(this.url + '/iteracion/' + iteracion.proyectoID, params, {headers: headers});
   }
 
   // Actualiza una iteración en la BD
-  updateIteracion(iteracionID: String, iteracion: Iteracion) {
+  updateIteracion(iteracionID: String, iteracion: Iteracion): Observable<Iteracion> {
     const json = JSON.stringify(iteracion);
     const params = json;
-    const headers = new Headers({'Content-Type': 'application/json'});
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
 
-    const iter = this.iteraciones.findIndex( x => x.numero.toString() === iteracionID);
-    this.iteraciones.splice(iter, 1, iteracion);
-
-    return this._http.put(this.url + '/iteracion/' + iteracionID, params, { headers: headers})
-    .map(res => res.json());
+    return this.httpClient.put<Iteracion>(this.url + '/iteracion/' + iteracionID, params, { headers: headers});
   }
 
   // Borra una iteración de la BD
-  deleteIteracion(iteracionID: String) {
-    const iter = this.iteraciones.findIndex( x => x.numero.toString() === iteracionID);
-    this.iteraciones.splice(iter, 1);
-
-    return this._http.delete(this.url + '/iteracion/' + iteracionID)
-      .map(res => res.json());
+  deleteIteracion(iteracionID: String): Observable<Iteracion> {
+    return this.httpClient.delete<Iteracion>(this.url + '/iteracion/' + iteracionID);
   }
 
 }

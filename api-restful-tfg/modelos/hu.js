@@ -11,10 +11,12 @@ var huSchema = Schema({
     iteracion: Number,
     posX: Number,
     posY: Number,
-    a1: Boolean,
-    a2: Boolean,
-    a3: Boolean,
-    finalizado: Boolean,
+    tareas: {
+        a1: Boolean,
+        a2: Boolean,
+        a3: Boolean,
+        finalizado: Boolean
+    },
     padres: [{ type: Schema.ObjectId, ref: 'Hu' }],
     proyecto: { type: Schema.ObjectId, ref: 'Proyecto' }
 });

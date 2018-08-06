@@ -1,3 +1,4 @@
+import { Tareas } from './tareas';
 
 export interface HistoriaUsuario {
   _id: String;
@@ -7,10 +8,7 @@ export interface HistoriaUsuario {
   tipo: String;
   posX: Number;
   posY: Number;
-  a1: Boolean;
-  a2: Boolean;
-  a3: Boolean;
-  finalizado: Boolean;
+  tareas: Tareas;
   iteracion: number;
   padres: String[];
   proyectoID: String;
