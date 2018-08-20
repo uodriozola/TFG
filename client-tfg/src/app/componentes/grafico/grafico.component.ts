@@ -162,13 +162,14 @@ export class GraficoComponent implements OnInit, OnDestroy {
         color = this.logicaService.colorTarea(hu.tareas);
       }
       Observable.forkJoin(this.huService.getPadres(hu._id),
-      this.huService.getHijos(hu._id)).subscribe(res => {
+      this.huService.getDescendientes(hu._id)).subscribe(res => {
         const padres = res[0];
-        const hijos = res[1];
-        const cambios = this.logicaService.setTareas(hu, padres, hijos);
+        const descendientes = res[1];
+        const cambios = this.logicaService.setTareas(hu, padres, descendientes);
         this.nodes.update({ id: hu._id, label: hu.numero, group: hu.tipo, color: { background: color } });
         for (const cambio of cambios) {
           this.huService.updateHu(cambio._id, cambio).subscribe(resul => {
+            color = this.logicaService.colorTarea(cambio.tareas);
             this.nodes.update({ id: cambio._id, color: { background: color } });
           });
         }
@@ -259,7 +260,8 @@ export class GraficoComponent implements OnInit, OnDestroy {
       proyectoID: this.proyectoID, nombre: 'Nuevo', descripcion: 'Descripcion de Nuevo',
       tipo: 'Direct', _id: nodo.id, posX: nodo.x, posY: nodo.y,
       numero: this.contadorService.contador, iteracion: 0, padres: [],
-      tareas: { a1: false, a2: false, a3: false, finalizado: false }
+      tareas: { a1: { realizado: false, habilitado: true }, a2: { realizado: false, habilitado: true },
+      a3: { realizado: false, habilitado: true }, finalizado: { realizado: false, habilitado: true }, }
     };
 
     nodo.label = hu.numero;
@@ -280,22 +282,26 @@ export class GraficoComponent implements OnInit, OnDestroy {
     Observable.forkJoin(this.huService.getHu(arista.to),
       this.huService.getHu(arista.from),
       this.huService.getHijos(arista.from),
-      this.huService.getPadres(arista.to)).subscribe(res => {
+      this.huService.getPadres(arista.to),
+      this.huService.getDescendientes(arista.to),
+      this.huService.getAscendientes(arista.to)).subscribe(res => {
         const hijo = res[0];
         const padre = res[1];
         const hermanos = res[2];
         const padres = res[3];
-      const nuevos = this.logicaService.setTipo(padre, hijo, hermanos, padres);
+        const descendientes = res[4];
+        const ascendientes = res[5];
+      const nuevos = this.logicaService.setValores(padre, hijo, hermanos, padres, descendientes, ascendientes);
       // Si el tipo devuelto no cumple los criterios establecidos no se crea la relación
       const tipo = this.nodes.get(arista.to).group;
       if (nuevos[0].tipo === tipo && nuevos[0].tipo !== 'Fusion' && nuevos[0].tipo !== 'Incremented') {
         callback(null);
       } else {
         for (const nuevo of nuevos) {
-          if (nuevos[0].tipo !== 'Warning') {
-            this.nodes.update({ id: nuevo._id, group: nuevo.tipo, color: { background: this.logicaService.colorTarea(nuevo.tareas)}});
-          } else {
+          if (nuevo.tipo === 'Warning') {
             this.nodes.update({ id: nuevo._id, group: nuevo.tipo });
+          } else {
+            this.nodes.update({ id: nuevo._id, group: nuevo.tipo, color: this.logicaService.colorTarea(nuevo.tareas) });
           }
           this.huService.updateHu(nuevo._id, nuevo).subscribe(resul => {
           });

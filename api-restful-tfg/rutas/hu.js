@@ -6,6 +6,8 @@ var api = express.Router();
 
 api.get('/hu/:id', huControlador.getHu);
 api.get('/hus/hijos/:proyecto/:id', huControlador.getHijos);
+api.get('/hus/descendientes/:proyecto/:id', huControlador.getDescendientes);
+api.get('/hus/ascendientes/:proyecto/:id', huControlador.getAscendientes);
 api.get('/hus/padres/:proyecto/:id', huControlador.getPadres);
 api.post('/hu/:proyecto', huControlador.saveHu);
 api.get('/hus/:proyecto?', huControlador.getHus);

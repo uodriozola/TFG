@@ -82,12 +82,13 @@ export class DetallesComponent implements OnInit, OnDestroy {
       descripcion: [this.hu.descripcion, Validators.compose([Validators.required])],
       iteracion: [this.hu.iteracion, Validators.compose([Validators.required])],
       tipo: [this.hu.tipo, Validators.compose([Validators.required])],
-      a1: [this.hu.tareas.a1],
-      a2: [this.hu.tareas.a2],
-      a3: [this.hu.tareas.a3],
-      finalizado: [this.hu.tareas.finalizado]
+      a1: [this.hu.tareas.a1.realizado],
+      a2: [this.hu.tareas.a2.realizado],
+      a3: [ this.hu.tareas.a3.realizado],
+      finalizado: [this.hu.tareas.finalizado.realizado]
     });
-    this.formulario.setValidators([Validaciones.checkboxes('a1', 'a2', 'a3', 'finalizado')]);
+    this.formulario.setValidators([Validaciones.checkboxes('a1', 'a2', 'a3', 'finalizado'),
+    Validaciones.habilitadas('a1', 'a2', 'a3', 'finalizado', this.hu.tareas)]);
   }
 
   cargarFormNuevo() {
@@ -106,10 +107,10 @@ export class DetallesComponent implements OnInit, OnDestroy {
 
   cambiaHu() {
     Object.assign(this.hu, this.formulario.value);
-    this.hu.tareas.a1 = this.formulario.get('a1').value;
-    this.hu.tareas.a2 = this.formulario.get('a2').value;
-    this.hu.tareas.a3 = this.formulario.get('a3').value;
-    this.hu.tareas.finalizado = this.formulario.get('finalizado').value;
+    this.hu.tareas.a1.realizado = this.formulario.get('a1').value;
+    this.hu.tareas.a2.realizado = this.formulario.get('a2').value;
+    this.hu.tareas.a3.realizado = this.formulario.get('a3').value;
+    this.hu.tareas.finalizado.realizado = this.formulario.get('finalizado').value;
     this.huService.updateHu(this.hu._id, this.hu).subscribe(nuevo => {
       this.logicaService.detallesNodoCambio(this.hu);
     });
@@ -130,10 +131,10 @@ export class DetallesComponent implements OnInit, OnDestroy {
       iteracion: this.formNuevo.value.iteracion,
       padres: [],
       tareas: {
-        a1: false,
-        a2: false,
-        a3: false,
-        finalizado: false
+        a1: { realizado: false, habilitado: true },
+        a2: { realizado: false, habilitado: true },
+        a3: { realizado: false, habilitado: true },
+        finalizado: { realizado: false, habilitado: true }
       }
     };
     this.huService.addHu(this.hu).subscribe(

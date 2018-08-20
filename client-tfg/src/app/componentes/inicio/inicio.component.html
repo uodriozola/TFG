@@ -12,7 +12,7 @@
                                         <p><img class="img-fluid imagenAdd" src="../assets/images/add-button-hi.png" alt="card image"></p>
                                         <h4 class="card-title">New proyect</h4>
                                         <p class="card-text">Create a new proyect</p>
-                                        <a routerLink="/crear-proyecto" class="btn btn-primary btn-sm" href="#"><i class="fa fa-plus"></i></a>
+                                        <a class="btn btn-primary btn-sm" (click)="crearProyecto()"><i class="fa fa-plus"></i></a>
                                     </div>
                                 </div>
                             </div>
@@ -27,7 +27,7 @@
                         <div class="frontside">
                             <div class="card carta">
                                 <div class="card-body text-center">
-                                    <p><img class=" img-fluid imagenAdd" src="../assets/images/add-button-hi.png" alt="card image"></p>
+                                    <p><img class=" img-fluid imagenProyecto" src="../assets/images/Directo.jpg" alt="card image"></p>
                                     <h4 class="card-title">{{proyecto.nombre}}</h4>
                                     <p class="card-text">{{proyecto.descripcion}}</p>
                                     <a [routerLink] ="['/proyecto', proyecto._id]"  class="btn btn-primary btn-sm"><i class="fa fa-plus"></i></a>

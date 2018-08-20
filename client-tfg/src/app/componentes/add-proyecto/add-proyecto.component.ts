@@ -4,6 +4,7 @@ import { Router, ActivatedRoute, Params} from '@angular/router';
 
 import { ProyectoService } from '../../servicios/proyecto.service';
 import { Proyecto } from '../../clases/proyecto';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-add-proyecto',
@@ -21,7 +22,8 @@ export class AddProyectoComponent implements OnInit {
   constructor(private fb: FormBuilder,
     private _route: ActivatedRoute,
     private _router: Router,
-    private _proyectoService: ProyectoService
+    private _proyectoService: ProyectoService,
+    public activeModal: NgbActiveModal
   ) {
 
   }
@@ -38,29 +40,17 @@ export class AddProyectoComponent implements OnInit {
     });
   }
 
+  cerrarModal() {
+    this.activeModal.dismiss('Modal cerrado');
+  }
+
   onSubmit() {
     this.proyecto = {
       _id: undefined,
       nombre: this.formulario.value.nombre,
       descripcion: this.formulario.value.descripcion
     };
-    this._proyectoService.addProyecto(this.proyecto).subscribe(
-      response => {
-        this.proyecto = response;
-        if (!response) {
-          alert ('Error en el servidor');
-        } else {
-          this._router.navigate(['/']);
-        }
-      },
-      error => {
-        this.errorMessage = <any>error;
-
-        if (this.errorMessage != null) {
-          console.log(this.errorMessage);
-        }
-      }
-    );
+    this.activeModal.close(this.proyecto);
   }
 
 }

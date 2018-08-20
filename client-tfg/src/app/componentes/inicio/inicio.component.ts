@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute, Params} from '@angular/router';
 
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProyectoService } from '../../servicios/proyecto.service';
 import { Proyecto } from '../../clases/proyecto';
+import { AddProyectoComponent } from '../add-proyecto/add-proyecto.component';
 
 @Component({
   selector: 'app-inicio',
@@ -14,6 +16,8 @@ export class InicioComponent implements OnInit {
   public proyectos: Proyecto[];
   public errorMessage: any;
 
+  public randomImage = ['Directo.jpg', 'Division.png', 'Fusion.png', 'Incrementado.png', 'Incremento.jpeg', 'Reutilizado.png'];
+
   public popoverTitle: String = 'Delete proyect';
   public popoverMessage: String = 'Are you sure you want to delete this proyect?';
   public confirmClicked: Boolean = false;
@@ -22,7 +26,8 @@ export class InicioComponent implements OnInit {
   constructor(
     private _route: ActivatedRoute,
     private _router: Router,
-    private _proyectoService: ProyectoService
+    private _proyectoService: ProyectoService,
+    private modalService: NgbModal
   ) {
 
   }
@@ -34,7 +39,6 @@ export class InicioComponent implements OnInit {
   getProyectos() {
     this._proyectoService.getProyectos().subscribe(
       result => {
-        console.log(result);
         this.proyectos = result;
         if (!this.proyectos) {
           alert('Error en el servidor');
@@ -46,6 +50,30 @@ export class InicioComponent implements OnInit {
         console.log(this.errorMessage);
       }
     });
+  }
+
+  crearProyecto() {
+    const modalRef = this.modalService.open(AddProyectoComponent);
+
+    modalRef.result.then((result) => {
+      this._proyectoService.addProyecto(result).subscribe(response => {
+        this.proyectos.push(response);
+        if (!response) {
+          alert ('Error en el servidor');
+        } else {
+          console.log('Proyecto creado correctamente');
+        }
+      });
+    }).catch((error) => {
+      if (error !== 'Modal cerrado') {
+        console.log('Ha ocurrido un error');
+      }
+    });
+}
+
+  randomImagen(): String {
+    const num = Math.floor(Math.random() * 6);
+     return '../assets/images/' + this.randomImage[num];
   }
 
   onDeleteProyecto(id) {

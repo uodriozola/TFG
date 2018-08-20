@@ -18,6 +18,7 @@ import { InicioComponent } from './componentes/inicio/inicio.component';
 import { ProyectoComponent } from './componentes/proyecto/proyecto.component';
 import { AppRoutingModule } from './/app-routing.module';
 import { AddProyectoComponent } from './componentes/add-proyecto/add-proyecto.component';
+import { AcercaDeComponent } from './componentes/acerca-de/acerca-de.component';
 
 import { ConfirmationPopoverModule } from 'angular-confirmation-popover';
 import { LogicaHuService } from './servicios/logica-hu.service';
@@ -35,6 +36,7 @@ import { ContadorService } from './servicios/contador.service';
     InicioComponent,
     ProyectoComponent,
     AddProyectoComponent,
+    AcercaDeComponent,
   ],
   imports: [
     BrowserModule,

@@ -48,6 +48,18 @@ export class HuService {
     return this.httpClient.get<HistoriaUsuario[]>(ruta);
 }
 
+// Cojo de la BD los descendientes del proyecto cuyo ID paso como parámetro
+public getDescendientes(huID: String): Observable<HistoriaUsuario[]> {
+  const ruta = this.url + '/hus/descendientes/' + this.proyectoID + '/' + huID;
+  return this.httpClient.get<HistoriaUsuario[]>(ruta);
+}
+
+// Cojo de la BD los ascendientes del proyecto cuyo ID paso como parámetro
+public getAscendientes(huID: String): Observable<HistoriaUsuario[]> {
+  const ruta = this.url + '/hus/ascendientes/' + this.proyectoID + '/' + huID;
+  return this.httpClient.get<HistoriaUsuario[]>(ruta);
+}
+
 // Cojo de la BD los ID de los padres del proyecto cuyo ID paso como parámetro
 public getPadres(huID: String): Observable<HistoriaUsuario[]> {
   const ruta = this.url + '/hus/padres/' + this.proyectoID + '/' + huID;

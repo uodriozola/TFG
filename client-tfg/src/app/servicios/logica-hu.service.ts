@@ -46,6 +46,24 @@ export class LogicaHuService {
     this.eliminaIteracion.next(iter);
   }
 
+  // Devuelve tanto las tareas como el tipo modificado de un OU en función de sus relaciones
+  public setValores(nuevoPadre: HistoriaUsuario, hijo: HistoriaUsuario,
+    hermanos: HistoriaUsuario[], padres: HistoriaUsuario[],
+    descendientes: HistoriaUsuario[], ascendientes: HistoriaUsuario[]): HistoriaUsuario[] {
+      let respuesta: HistoriaUsuario[] = [];
+      respuesta = this.setTipo(nuevoPadre, hijo, hermanos, padres);
+      hijo = respuesta[0];
+      if (hijo.tipo === 'Division') {
+        respuesta.push(hermanos[0]);
+        respuesta = respuesta.concat(descendientes);
+        respuesta = this.setTareas(nuevoPadre, [], respuesta);
+      } else if (hijo.tipo === 'Fusion' || hijo.tipo === 'Incremented') {
+        ascendientes.push(nuevoPadre);
+        respuesta = respuesta.concat(this.setTareas(hijo, ascendientes, []));
+      }
+      return respuesta;
+    }
+
   // Decide el tipo de la HU y modifica el del hermano en caso de que sea Warning
   public setTipo(nuevoPadre: HistoriaUsuario, hijo: HistoriaUsuario,
     hermanos: HistoriaUsuario[], padres: HistoriaUsuario[]): HistoriaUsuario[] {
@@ -77,24 +95,37 @@ export class LogicaHuService {
 
   // Devuelve la posición de la última tarea realizada
   public ultimaTarea(tareas: Tareas): Number {
-    const estado = [tareas.a1, tareas.a2, tareas.a3, tareas.finalizado];
+    const estado = [tareas.a1.realizado, tareas.a2.realizado, tareas.a3.realizado, tareas.finalizado.realizado];
     const verdadero = estado.lastIndexOf(true);
     return verdadero;
   }
 
   // En función de las tareas realizadas devuelve el color del nodo
   public colorTarea(tareas: Tareas): String {
-    if (tareas.finalizado) {
+    if (tareas.finalizado.realizado) {
       return '#898584';
-    } else if (tareas.a3) {
+    } else if (tareas.a3.realizado) {
       return '#C2BDBB';
-    } else if (tareas.a2) {
+    } else if (tareas.a2.realizado) {
       return '#E2DEDD';
-    } else if (tareas.a1) {
+    } else if (tareas.a1.realizado) {
       return '#F7EFEE';
     } else {
       return '#FFFFFF';
     }
+  }
+
+  // Dadas unas tareas y la posición desde la que no pueden ser modificadas, pone a false la opción habilitar de las anteriores
+  public deshabilitaTareas(tareas: Tareas, pos: Number): Tareas {
+    const habilitado = [true, true, true, true];
+    for (let x = 0; x <= pos; x++) {
+      habilitado[x] = false;
+    }
+    tareas.a1.habilitado = habilitado[0];
+    tareas.a2.habilitado = habilitado[1];
+    tareas.a3.habilitado = habilitado[2];
+    tareas.finalizado.habilitado = habilitado[3];
+    return tareas;
   }
 
   // Dado un OU, en función de su tipo, decide las tareas que tienen realizadas sus padres o hijos
@@ -105,8 +136,9 @@ export class LogicaHuService {
       for (const padre of padres) {
         if (this.ultimaTarea(hu.tareas) > this.ultimaTarea(padre.tareas)) {
           padre.tareas = hu.tareas;
-          res.push(padre);
         }
+        padre.tareas = this.deshabilitaTareas(padre.tareas, this.ultimaTarea(hu.tareas));
+        res.push(padre);
       }
     }
     // Si tiene más de un hijo los hijos heredan del padre
@@ -114,8 +146,9 @@ export class LogicaHuService {
       for (const hijo of hijos) {
         if (this.ultimaTarea(hu.tareas) > this.ultimaTarea(hijo.tareas)) {
           hijo.tareas = hu.tareas;
-          res.push(hijo);
         }
+        hijo.tareas = this.deshabilitaTareas(hijo.tareas, this.ultimaTarea(hu.tareas));
+        res.push(hijo);
       }
     }
     return res;

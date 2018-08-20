@@ -4,6 +4,8 @@
 var Hu = require('../modelos/hu');
 var Proyecto = require('../modelos/proyecto');
 
+var async = require('async');
+
 function getHu(req, res) {
     var huId = req.params.id;
 
@@ -81,6 +83,75 @@ function getHusIter(req, res) {
     });
 }
 
+function getAscendientes(req, res) {
+    var proyectoId = req.params.proyecto;
+    var huID = req.params.id;
+
+    let ascendientes = [];
+    let ids = [huID];
+    let count = 0;
+
+    async.whilst(
+        () => {
+            return count < ids.length
+        },
+        (cb) => {
+            Hu.find({ proyecto: proyectoId, _id: ids[count] }, 'padres')
+                .exec((err, val) => {
+                    Hu.find({ proyecto: proyectoId, _id: { $in: val[0].padres } })
+                        .exec((err, doc) => {
+                            doc.forEach(elem => {
+                                if (elem.tipo !== 'Fusion' && elem.tipo !== 'Incrementado') {
+                                ascendientes.push(elem);
+                                ids.push(elem._id);
+                            }
+                            });
+                            count++;
+                            cb();
+                        });
+                });
+        },
+        (err) => {
+            if (err) {
+                console.error(err);
+            }
+            res.status(200).send(ascendientes);
+        });
+}
+
+function getDescendientes(req, res) {
+    var proyectoId = req.params.proyecto;
+    var huID = req.params.id;
+
+    let descendientes = [];
+    let ids = [huID];
+    let count = 0;
+
+    async.whilst(
+        () => {
+            return count < ids.length
+        },
+        (cb) => {
+            Hu.find({ proyecto: proyectoId, padres: ids[count] }).exec((err, doc) => {
+                doc.forEach(elem => {
+                    if (elem.tipo !== 'Fusion' && elem.tipo !== 'Incrementado') {
+                        descendientes.push(elem);
+                        ids.push(elem._id);
+                    }
+                });
+                count++;
+                cb();
+            });
+        },
+        (err) => {
+            if (err) {
+                console.error(err);
+            }
+            res.status(200).send(descendientes);
+        });
+}
+
+
 function getHijos(req, res) {
     var proyectoId = req.params.proyecto;
     var huID = req.params.id;
@@ -106,12 +177,14 @@ function getHijos(req, res) {
     });
 }
 
+
+
 function getPadres(req, res) {
     var proyectoId = req.params.proyecto;
     var huID = req.params.id;
     //Sacar las HU que son padres de huID
     Hu.
-        find({ proyecto: proyectoId, _id: huID }, {'_id': 0, 'padres': 1}).
+        find({ proyecto: proyectoId, _id: huID }, { '_id': 0, 'padres': 1 }).
         populate('padres').
         exec((err, hus) => {
             if (err) {
@@ -196,12 +269,14 @@ function deleteHu(req, res) {
         }
     });
 
-    
+
 }
 
 module.exports = {
     getHu,
     getHijos,
+    getDescendientes,
+    getAscendientes,
     getPadres,
     saveHu,
     getHus,
