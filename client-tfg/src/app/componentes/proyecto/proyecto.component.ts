@@ -7,7 +7,7 @@ import { Proyecto } from '../../clases/proyecto';
 import { HuService } from '../../servicios/hu.service';
 import { HistoriaUsuario } from '../../clases/hu';
 
-import { LogicaHuService } from '../../servicios/logica-hu.service';
+import { ComunicacionService } from '../../servicios/comunicacion.service';
 
 @Component({
   selector: 'app-proyecto',
@@ -24,7 +24,7 @@ export class ProyectoComponent implements OnInit {
     private _route: ActivatedRoute,
     private _router: Router,
     private _proyectoService: ProyectoService,
-    private logicaService: LogicaHuService,
+    private comunicacionService: ComunicacionService,
     private _huService: HuService,
   ) {
 
@@ -54,7 +54,7 @@ export class ProyectoComponent implements OnInit {
   }
 
   addIteration() {
-    this.logicaService.addIteration();
+    this.comunicacionService.addIteration();
   }
 
 }

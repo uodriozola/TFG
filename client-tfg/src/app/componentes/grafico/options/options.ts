@@ -72,10 +72,7 @@ export let options = {
       nodes: {
         physics: false,
         color: {
-          background: 'white',
-          highlight: {
-            background: 'yellow'
-          }
+          background: 'white'
         }
       }
     };

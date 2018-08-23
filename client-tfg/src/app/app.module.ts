@@ -21,7 +21,9 @@ import { AddProyectoComponent } from './componentes/add-proyecto/add-proyecto.co
 import { AcercaDeComponent } from './componentes/acerca-de/acerca-de.component';
 
 import { ConfirmationPopoverModule } from 'angular-confirmation-popover';
-import { LogicaHuService } from './servicios/logica-hu.service';
+import { ComunicacionService } from './servicios/comunicacion.service';
+import { TareasService } from './servicios/tareas.service';
+import { TiposService } from './servicios/tipos.service';
 import { ContadorService } from './servicios/contador.service';
 
 
@@ -52,7 +54,9 @@ import { ContadorService } from './servicios/contador.service';
   providers: [HuService,
     ProyectoService,
     IteracionService,
-    LogicaHuService,
+    ComunicacionService,
+    TareasService,
+    TiposService,
     ContadorService],
   bootstrap: [AppComponent]
 })

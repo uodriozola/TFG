@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, ElementRef, Input } from '@angular/core';
 import { HistoriaUsuario } from '../../clases/hu'; // importo la clase HistoriaUsuario
 import { HuService } from '../../servicios/hu.service'; // importo el servicio husService
-import { LogicaHuService } from '../../servicios/logica-hu.service';
+import { ComunicacionService } from '../../servicios/comunicacion.service';
+import { TareasService } from '../../servicios/tareas.service';
 import { ContadorService } from '../../servicios/contador.service';
 import { ActivatedRoute } from '@angular/router';
 // tslint:disable-next-line:import-blacklist
@@ -39,7 +40,8 @@ export class GraficoComponent implements OnInit, OnDestroy {
   constructor(private element: ElementRef,
     private huService: HuService,
     private iteracionService: IteracionService,
-    private logicaService: LogicaHuService,
+    private comunicacionService: ComunicacionService,
+    private tareasService: TareasService,
     private contadorService: ContadorService,
     private _route: ActivatedRoute) {
 
@@ -108,11 +110,11 @@ export class GraficoComponent implements OnInit, OnDestroy {
           if (node.id !== undefined) {
             this.huService.getHu(node.id).subscribe(res => {
               this.hu = res;
-              this.logicaService.updateNodoSel(this.hu);
+              this.comunicacionService.updateNodoSel(this.hu);
             });
           } else {
             this.hu = undefined;
-            this.logicaService.updateNodoSel(undefined);
+            this.comunicacionService.updateNodoSel(undefined);
           }
         } else {
           node = this.nodes.get(select);
@@ -154,22 +156,22 @@ export class GraficoComponent implements OnInit, OnDestroy {
 
 
     // Actualizamos los detalles del nodo que se ha modificado en el componente de Detalles
-    this.subscrip1 = this.logicaService.huDetallesCambio.subscribe((hu) => {
+    this.subscrip1 = this.comunicacionService.huDetallesCambio.subscribe((hu) => {
       let color;
       if (hu.tipo === 'Warning') {
         color = 'red';
       } else {
-        color = this.logicaService.colorTarea(hu.tareas);
+        color = this.tareasService.colorTarea(hu.tareas);
       }
       Observable.forkJoin(this.huService.getPadres(hu._id),
       this.huService.getDescendientes(hu._id)).subscribe(res => {
         const padres = res[0];
         const descendientes = res[1];
-        const cambios = this.logicaService.setTareas(hu, padres, descendientes);
+        const cambios = this.tareasService.setTareas(hu, padres, descendientes);
         this.nodes.update({ id: hu._id, label: hu.numero, group: hu.tipo, color: { background: color } });
         for (const cambio of cambios) {
           this.huService.updateHu(cambio._id, cambio).subscribe(resul => {
-            color = this.logicaService.colorTarea(cambio.tareas);
+            color = this.tareasService.colorTarea(cambio.tareas);
             this.nodes.update({ id: cambio._id, color: { background: color } });
           });
         }
@@ -177,12 +179,12 @@ export class GraficoComponent implements OnInit, OnDestroy {
     });
 
     // Visualizamos en el gráfico la HU creada desde Detalles
-    this.subscrip2 = this.logicaService.huDetallesCreado.subscribe((hu) => {
+    this.subscrip2 = this.comunicacionService.huDetallesCreado.subscribe((hu) => {
       this.nodes.add({ id: hu._id, label: hu.numero, group: hu.tipo, x: hu.posX, y: hu.posY });
     });
 
     // Creamos una nueva iteración al clicar en el botón correspondiente desde Proyecto
-    this.subscrip3 = this.logicaService.nuevaIteracion.subscribe(() => {
+    this.subscrip3 = this.comunicacionService.nuevaIteracion.subscribe(() => {
       this.addIteracion();
     });
 
@@ -221,7 +223,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
         });
         this.edges.add({
           from: '-' + iteracion.numero, to: iteracion.numero,
-          color: 'grey', dashes: true, arrows: { to: { enabled: false } }
+          color: { background : 'grey', dashes: true, arrows: { to: { enabled: false }}}
         });
       }
     } else {
@@ -240,7 +242,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
       if (hu.tipo === 'Warning') {
         color = 'red';
       } else {
-        color = this.logicaService.colorTarea(hu.tareas);
+        color = this.tareasService.colorTarea(hu.tareas);
       }
       this.nodes.add({ id: hu._id, group: hu.tipo, label: hu.numero, x: hu.posX, y: hu.posY, color: { background: color } });
       // relleno el Dataset de edges
@@ -261,7 +263,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
       tipo: 'Direct', _id: nodo.id, posX: nodo.x, posY: nodo.y,
       numero: this.contadorService.contador, iteracion: 0, padres: [],
       tareas: { a1: { realizado: false, habilitado: true }, a2: { realizado: false, habilitado: true },
-      a3: { realizado: false, habilitado: true }, finalizado: { realizado: false, habilitado: true }, }
+      a3: { realizado: false, habilitado: true }, finalizado: { realizado: false, habilitado: true } }
     };
 
     nodo.label = hu.numero;
@@ -291,7 +293,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
         const padres = res[3];
         const descendientes = res[4];
         const ascendientes = res[5];
-      const nuevos = this.logicaService.setValores(padre, hijo, hermanos, padres, descendientes, ascendientes);
+      const nuevos = this.comunicacionService.setValores(padre, hijo, hermanos, padres, descendientes, ascendientes);
       // Si el tipo devuelto no cumple los criterios establecidos no se crea la relación
       const tipo = this.nodes.get(arista.to).group;
       if (nuevos[0].tipo === tipo && nuevos[0].tipo !== 'Fusion' && nuevos[0].tipo !== 'Incremented') {
@@ -301,13 +303,14 @@ export class GraficoComponent implements OnInit, OnDestroy {
           if (nuevo.tipo === 'Warning') {
             this.nodes.update({ id: nuevo._id, group: nuevo.tipo });
           } else {
-            this.nodes.update({ id: nuevo._id, group: nuevo.tipo, color: this.logicaService.colorTarea(nuevo.tareas) });
+            this.nodes.update({ id: nuevo._id, group: nuevo.tipo,
+              color: {background: this.tareasService.colorTarea(nuevo.tareas)}});
           }
           this.huService.updateHu(nuevo._id, nuevo).subscribe(resul => {
           });
         }
         // Actualizo los detalles en el momento
-        this.logicaService.updateNodoSel(undefined);
+        this.comunicacionService.updateNodoSel(undefined);
         callback(arista);
       }
     });
@@ -359,7 +362,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
       this.iteracionService.deleteIteracion(iteracion.toString()).subscribe(res => {
         this.contadorService.decrementaIt();
         this.iteraciones.pop();
-        this.logicaService.eliminaIteration(this.iteracion);
+        this.comunicacionService.eliminaIteration(this.iteracion);
         // Modifico la iteración de los nodos que estaban en esa iteración
         this.huService.getHusIter(this.proyectoID, iteracion).subscribe(nodos => {
           nodos.forEach(n => {
@@ -447,7 +450,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
       ou.iteracion = this.compruebaIteracion(ou);
       this.huService.updateHu(id, ou).subscribe(nuevo => {
         // Actualizo los detalles en el momento
-        this.logicaService.updateNodoSel(ou);
+        this.comunicacionService.updateNodoSel(ou);
       });
     });
   }
@@ -476,7 +479,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
     };
     this.iteracionService.addIteracion(iteracion).subscribe(res => {
       this.iteracion = res;
-      this.logicaService.detallesIteration(iteracion);
+      this.comunicacionService.detallesIteration(iteracion);
       this.nodes.add({
         id: this.contadorService.iteraciones, label: this.contadorService.iteraciones,
         y: maxPosY + 70, x: posXder, fixed: { y: true, x: true }, group: 'Iteraciones',
@@ -490,7 +493,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
 
       this.edges.add({
         from: '-' + this.contadorService.iteraciones, to: this.contadorService.iteraciones,
-        color: 'grey', dashes: true, arrows: { to: { enabled: false } }
+        color: { background: 'grey', dashes: true, arrows: { to: { enabled: false }}}
       });
       // Si hay algún nodo por debajo de la iteración añadida se la modifico
       this.huService.getHusIter(this.proyectoID, this.contadorService.iteraciones - 1).subscribe(iter => {
