@@ -55,4 +55,22 @@ export class Validaciones {
         };
     }
 
+    /**
+   * Valida que dos campos tengan el mismo valor
+   * @param campo1 nombre del campo 1
+   * @param campo2 nombre del campo 2
+  */
+  static camposIguales(campo1: any, campo2: any): ValidatorFn {
+    return (control: AbstractControl): { [key: string]: any } => {
+      const valueCampo1 = control.get(campo1).value;
+      const valueCampo2 = control.get(campo2).value;
+      if (valueCampo1 && valueCampo2) {
+          return valueCampo1 === valueCampo2 ? null : { 'camposIguales': true };
+      } else {
+          return null;
+      }
+
+    };
+  }
+
 }

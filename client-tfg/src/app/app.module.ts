@@ -5,26 +5,27 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { HttpClientModule } from '@angular/common/http';
+import { AppRoutingModule } from './/app-routing.module';
 
 import { AppComponent } from './app.component';
 import { GraficoComponent } from './componentes/grafico/grafico.component';
 import { DetallesComponent } from './componentes/detalles/detalles.component';
-
-import { ProyectoService } from './servicios/proyecto.service';
-import { HuService } from './servicios/hu.service';
-import { IteracionService } from './servicios/iteracion.service';
 import { MenubarComponent } from './componentes/menubar/menubar.component';
 import { InicioComponent } from './componentes/inicio/inicio.component';
 import { ProyectoComponent } from './componentes/proyecto/proyecto.component';
-import { AppRoutingModule } from './/app-routing.module';
 import { AddProyectoComponent } from './componentes/add-proyecto/add-proyecto.component';
 import { AcercaDeComponent } from './componentes/acerca-de/acerca-de.component';
+import { PortadaComponent } from './componentes/portada/portada.component';
 
 import { ConfirmationPopoverModule } from 'angular-confirmation-popover';
+import { ProyectoService } from './servicios/proyecto.service';
+import { HuService } from './servicios/hu.service';
+import { IteracionService } from './servicios/iteracion.service';
 import { ComunicacionService } from './servicios/comunicacion.service';
 import { TareasService } from './servicios/tareas.service';
 import { TiposService } from './servicios/tipos.service';
 import { ContadorService } from './servicios/contador.service';
+import { RegistroComponent } from './componentes/registro/registro.component';
 
 
 
@@ -39,6 +40,8 @@ import { ContadorService } from './servicios/contador.service';
     ProyectoComponent,
     AddProyectoComponent,
     AcercaDeComponent,
+    PortadaComponent,
+    RegistroComponent,
   ],
   imports: [
     BrowserModule,
@@ -57,7 +60,11 @@ import { ContadorService } from './servicios/contador.service';
     ComunicacionService,
     TareasService,
     TiposService,
-    ContadorService],
+    ContadorService
+  ],
+  entryComponents: [AddProyectoComponent,
+    RegistroComponent
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

@@ -1,17 +1,20 @@
-<div class="row">
-<div class="col-md-12">
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a routerLink="/inicio" routerLinkActive="active" class="navbar-brand" href="#">Home</a>
-      <a routerLink="/acercade" class="navbar-brand" href="#">About</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="nav navbar-nav ml-auto">
-            <li><a href="#"><span class="fa fa-user"></span> Sign Up</a></li>
-          </ul>
-        </div>
-      </nav>
-      <router-outlet></router-outlet>
-</div>
+<nav class="navbar navbar-expand-lg fixed-top" id="menu">
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+    aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav mr-auto">
+      <li class="nav-item">
+        <a routerLink="/inicio" [routerLinkActive]="['active']" class="navbar-brand" href="#">Home</a>
+      </li>
+      <li class="nav-item active">
+        <a routerLink="/acercade" [routerLinkActive]="['active']" class="navbar-brand" href="#">About</a>
+      </li>
+    </ul>
+  </div>
+  <a href="#"><span class="fa fa-user"></span> Sign Up</a>
+</nav>
+<div id="contenido">
+  <router-outlet class="contenido"></router-outlet>
 </div>
