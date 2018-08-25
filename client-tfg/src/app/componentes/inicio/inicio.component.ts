@@ -5,6 +5,7 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProyectoService } from '../../servicios/proyecto.service';
 import { Proyecto } from '../../clases/proyecto';
 import { AddProyectoComponent } from '../add-proyecto/add-proyecto.component';
+import { UsuarioService } from '../../servicios/usuario.service';
 
 @Component({
   selector: 'app-inicio',
@@ -26,9 +27,16 @@ export class InicioComponent implements OnInit {
   constructor(
     private _route: ActivatedRoute,
     private _router: Router,
+    private usuarioService: UsuarioService,
     private _proyectoService: ProyectoService,
     private modalService: NgbModal
   ) {
+
+    this.usuarioService.getUsuario().subscribe(res => {
+      console.log(res);
+    }, error => {
+      this._router.navigateByUrl('portada');
+    });
 
   }
 

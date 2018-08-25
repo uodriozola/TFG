@@ -16,6 +16,7 @@ import { ProyectoComponent } from './componentes/proyecto/proyecto.component';
 import { AddProyectoComponent } from './componentes/add-proyecto/add-proyecto.component';
 import { AcercaDeComponent } from './componentes/acerca-de/acerca-de.component';
 import { PortadaComponent } from './componentes/portada/portada.component';
+import { RegistroComponent } from './componentes/registro/registro.component';
 
 import { ConfirmationPopoverModule } from 'angular-confirmation-popover';
 import { ProyectoService } from './servicios/proyecto.service';
@@ -25,7 +26,7 @@ import { ComunicacionService } from './servicios/comunicacion.service';
 import { TareasService } from './servicios/tareas.service';
 import { TiposService } from './servicios/tipos.service';
 import { ContadorService } from './servicios/contador.service';
-import { RegistroComponent } from './componentes/registro/registro.component';
+import { UsuarioService } from './servicios/usuario.service';
 
 
 
@@ -60,7 +61,8 @@ import { RegistroComponent } from './componentes/registro/registro.component';
     ComunicacionService,
     TareasService,
     TiposService,
-    ContadorService
+    ContadorService,
+    UsuarioService
   ],
   entryComponents: [AddProyectoComponent,
     RegistroComponent

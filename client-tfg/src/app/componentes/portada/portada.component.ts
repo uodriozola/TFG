@@ -3,6 +3,9 @@ import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { RegistroComponent } from '../registro/registro.component';
+import { UsuarioService } from '../../servicios/usuario.service';
+import { Usuario } from '../../clases/usuario';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-portada',
@@ -12,9 +15,19 @@ import { RegistroComponent } from '../registro/registro.component';
 export class PortadaComponent implements OnInit {
 
   public formulario: FormGroup;
+  public usuario: Usuario;
 
   constructor(private fb: FormBuilder,
-              private modalService: NgbModal) { }
+    private router: Router,
+    private modalService: NgbModal,
+    private usuarioService: UsuarioService) {
+      this.usuario = {
+        _id: undefined,
+        email: undefined,
+        username: undefined,
+        password: undefined
+      };
+    }
 
   ngOnInit() {
     this.cargarFormulario();
@@ -28,12 +41,34 @@ export class PortadaComponent implements OnInit {
     });
   }
 
+  onSubmit() {
+    Object.assign(this.usuario, this.formulario.value);
+    this.usuarioService.loginUsuario(this.usuario).subscribe(res => {
+      if (!res) {
+        alert('Error en el servidor');
+      } else {
+        this.router.navigateByUrl('inicio');
+      }
+    });
+  }
+
   registrarse() {
     const modalRef = this.modalService.open(RegistroComponent);
 
     modalRef.result.then((result) => {
       console.log(result);
-  });
-}
+      this.usuarioService.addUsuario(result).subscribe(res => {
+        if (!res) {
+          alert('Error en el servidor');
+        } else {
+          console.log('Usuario creado correctamente');
+        }
+      });
+    }).catch((error) => {
+      if (error !== 'Modal cerrado') {
+        console.log('Ha ocurrido un error');
+      }
+    });
+  }
 
 }

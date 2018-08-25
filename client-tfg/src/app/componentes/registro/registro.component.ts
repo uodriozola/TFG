@@ -3,8 +3,8 @@ import { FormGroup, Validators, FormBuilder } from '@angular/forms';
 import { Router, ActivatedRoute, Params} from '@angular/router';
 
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-
 import { Validaciones } from '../../validaciones/validaciones';
+import { Usuario } from '../../clases/usuario';
 
 @Component({
   selector: 'app-registro',
@@ -14,8 +14,8 @@ import { Validaciones } from '../../validaciones/validaciones';
 export class RegistroComponent implements OnInit {
 
   public formulario: FormGroup;
-
   public errorMessage: any;
+  public usuario: Usuario;
 
   constructor(private fb: FormBuilder,
     private _route: ActivatedRoute,
@@ -42,7 +42,13 @@ export class RegistroComponent implements OnInit {
   }
 
   onSubmit() {
-    this.activeModal.close(this.formulario.value);
+    this.usuario = {
+      _id: undefined,
+      email: this.formulario.value.email,
+      username: this.formulario.value.username,
+      password: this.formulario.value.password
+    };
+    this.activeModal.close(this.usuario);
   }
 
 }
