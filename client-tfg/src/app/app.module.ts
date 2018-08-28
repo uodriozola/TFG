@@ -14,6 +14,7 @@ import { MenubarComponent } from './componentes/menubar/menubar.component';
 import { InicioComponent } from './componentes/inicio/inicio.component';
 import { ProyectoComponent } from './componentes/proyecto/proyecto.component';
 import { AddProyectoComponent } from './componentes/add-proyecto/add-proyecto.component';
+import { EditProyectoComponent } from './componentes/edit-proyecto/edit-proyecto.component';
 import { AcercaDeComponent } from './componentes/acerca-de/acerca-de.component';
 import { PortadaComponent } from './componentes/portada/portada.component';
 import { RegistroComponent } from './componentes/registro/registro.component';
@@ -40,6 +41,7 @@ import { UsuarioService } from './servicios/usuario.service';
     InicioComponent,
     ProyectoComponent,
     AddProyectoComponent,
+    EditProyectoComponent,
     AcercaDeComponent,
     PortadaComponent,
     RegistroComponent,
@@ -65,6 +67,7 @@ import { UsuarioService } from './servicios/usuario.service';
     UsuarioService
   ],
   entryComponents: [AddProyectoComponent,
+    EditProyectoComponent,
     RegistroComponent
   ],
   bootstrap: [AppComponent]

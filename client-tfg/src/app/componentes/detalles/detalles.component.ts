@@ -8,6 +8,8 @@ import { IteracionService } from '../../servicios/iteracion.service';
 import { Iteracion } from '../../clases/iteracion';
 import { Validaciones } from '../../validaciones/validaciones';
 import { Tareas } from '../../clases/tareas';
+import { ProyectoService } from '../../servicios/proyecto.service';
+import { Proyecto } from '../../clases/proyecto';
 @Component({
   selector: 'app-detalles',
   templateUrl: './detalles.component.html',
@@ -16,6 +18,7 @@ import { Tareas } from '../../clases/tareas';
 export class DetallesComponent implements OnInit, OnDestroy {
 
   @Input() public proyectoID: String;
+  @Input() public username: String;
 
   errorMessage: any;
 
@@ -31,12 +34,16 @@ export class DetallesComponent implements OnInit, OnDestroy {
   public huSel: Boolean = false;
   public tipos: String[] = ['Direct', 'Increment', 'Reused'];
   public tareasDeshabilitados: Boolean[] = [true, true, true, true];
+  public esReutilizado = false;
+  public proyectos: Proyecto[];
+  public ousActual: HistoriaUsuario[];
 
   constructor(private fb: FormBuilder,
     private huService: HuService,
     private comunicacionService: ComunicacionService,
     private contadorService: ContadorService,
-    private iteracionService: IteracionService) { }
+    private iteracionService: IteracionService,
+    private proyectoService: ProyectoService) { }
 
   ngOnDestroy() {
     this.subscrib.unsubscribe();
@@ -53,9 +60,14 @@ export class DetallesComponent implements OnInit, OnDestroy {
     // Actualizamos los detalles del nodo seleccionado
     this.subscrib = this.comunicacionService.huSel.subscribe((hu) => {
       this.tipos = null;
+      this.esReutilizado = false;
       if (hu !== undefined) {
         this.huSel = true;
         this.hu = hu;
+        if (this.hu.tipo === 'Reused') {
+          this.esReutilizado = true;
+          this.reutilizado();
+        }
         this.comboTipo();
         this.cargarFormulario();
       } else {
@@ -78,10 +90,13 @@ export class DetallesComponent implements OnInit, OnDestroy {
   cargarFormulario() {
     // Se definen los campos del formulario
     this.formulario = this.fb.group({
+      numero: [this.hu.numero, Validators.compose([Validators.required])],
       nombre: [this.hu.nombre, Validators.compose([Validators.required])],
       descripcion: [this.hu.descripcion, Validators.compose([Validators.required])],
       iteracion: [this.hu.iteracion, Validators.compose([Validators.required])],
       tipo: [this.hu.tipo, Validators.compose([Validators.required])],
+      proyectoRel: [this.hu.proyectoRel],
+      ouRel: [this.hu.ouRel],
       a1: [this.hu.tareas.a1.realizado],
       a2: [this.hu.tareas.a2.realizado],
       a3: [this.hu.tareas.a3.realizado],
@@ -89,6 +104,21 @@ export class DetallesComponent implements OnInit, OnDestroy {
     });
     this.formulario.setValidators([Validaciones.checkboxes('a1', 'a2', 'a3', 'finalizado'),
     Validaciones.habilitadas('a1', 'a2', 'a3', 'finalizado', this.hu.tareas)]);
+
+    if (this.hu.tipo === 'Reused') {
+      this.formulario.get('proyectoRel').setValidators(Validators.compose([Validators.required]));
+      this.formulario.get('ouRel').setValidators(Validators.compose([Validators.required]));
+      this.formulario.get('proyectoRel').valueChanges.subscribe(res => {
+        const pro = this.proyectos.find(proyecto => this.formulario.get('proyectoRel').value === proyecto.nombre);
+        this.huService.getHus(pro._id).subscribe(ous => {
+          const actual = ous.findIndex(x => x._id === this.hu._id);
+          if (actual !== -1) {
+            ous.splice(actual, 1);
+          }
+          this.ousActual = ous;
+        });
+      });
+    }
   }
 
   cargarFormNuevo() {
@@ -135,7 +165,9 @@ export class DetallesComponent implements OnInit, OnDestroy {
         a2: { realizado: false, habilitado: true },
         a3: { realizado: false, habilitado: true },
         finalizado: { realizado: false, habilitado: true }
-      }
+      },
+      proyectoRel: undefined,
+      ouRel: undefined
     };
     this.huService.addHu(this.hu).subscribe(
       response => {
@@ -161,6 +193,22 @@ export class DetallesComponent implements OnInit, OnDestroy {
         this.tipos = ['Direct', 'Increment', 'Reused'];
       } else {
         this.tipos = [this.hu.tipo];
+      }
+    });
+  }
+
+  reutilizado() {
+    this.proyectoService.getProyectos(this.username).subscribe(proyectos => {
+      this.proyectos = proyectos;
+      const pro = this.proyectos.find(proyecto => this.formulario.get('proyectoRel').value === proyecto.nombre);
+      if (pro !== undefined) {
+        this.huService.getHus(pro._id).subscribe(ous => {
+          const actual = ous.findIndex(x => x._id === this.hu._id);
+          if (actual !== -1) {
+            ous.splice(actual, 1);
+          }
+          this.ousActual = ous;
+        });
       }
     });
   }

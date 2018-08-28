@@ -16,6 +16,7 @@ import { UsuarioService } from '../../servicios/usuario.service';
 export class InicioComponent implements OnInit {
   public proyectos: Proyecto[];
   public errorMessage: any;
+  public username: String;
 
   public randomImage = ['Directo.jpg', 'Division.png', 'Fusion.png', 'Incrementado.png', 'Incremento.jpeg', 'Reutilizado.png'];
 
@@ -30,22 +31,23 @@ export class InicioComponent implements OnInit {
     private usuarioService: UsuarioService,
     private _proyectoService: ProyectoService,
     private modalService: NgbModal
-  ) {
+  ) {}
 
+  ngOnInit() {
     this.usuarioService.getUsuario().subscribe(res => {
-      console.log(res);
+      this.addUsername(res);
+      this.getProyectos();  // Cojo los proyectos que hay en la base de datos
     }, error => {
       this._router.navigateByUrl('portada');
     });
-
   }
 
-  ngOnInit() {
-    this.getProyectos();  // Cojo los proyectos que hay en la base de datos
+  addUsername(data) {
+    this.username = data._id;
   }
 
   getProyectos() {
-    this._proyectoService.getProyectos().subscribe(
+    this._proyectoService.getProyectos(this.username).subscribe(
       result => {
         this.proyectos = result;
         if (!this.proyectos) {

@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 import { IteracionService } from '../../servicios/iteracion.service';
 import { Iteracion } from '../../clases/iteracion';
 import { options } from './options/options';
+import { Tareas } from '../../clases/tareas';
 declare var vis: any;
 
 @Component({
@@ -175,6 +176,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
             this.nodes.update({ id: cambio._id, color: { background: color } });
           });
         }
+        this.comunicacionService.updateNodoSel(hu);
       });
     });
 
@@ -258,12 +260,14 @@ export class GraficoComponent implements OnInit, OnDestroy {
   private añadeNodo(nodo: any, callback: any) {
     this.contadorService.incrementa();
     // Creo el objeto HU
-    const hu = {
+    const hu: HistoriaUsuario = {
       proyectoID: this.proyectoID, nombre: 'Nuevo', descripcion: 'Descripcion de Nuevo',
       tipo: 'Direct', _id: nodo.id, posX: nodo.x, posY: nodo.y,
       numero: this.contadorService.contador, iteracion: 0, padres: [],
+      proyectoRel: undefined,
+      ouRel: undefined,
       tareas: { a1: { realizado: false, habilitado: true }, a2: { realizado: false, habilitado: true },
-      a3: { realizado: false, habilitado: true }, finalizado: { realizado: false, habilitado: true } }
+      a3: { realizado: false, habilitado: true }, finalizado: { realizado: false, habilitado: true }}
     };
 
     nodo.label = hu.numero;
@@ -307,6 +311,14 @@ export class GraficoComponent implements OnInit, OnDestroy {
               color: {background: this.tareasService.colorTarea(nuevo.tareas)}});
           }
           this.huService.updateHu(nuevo._id, nuevo).subscribe(resul => {
+            if (nuevos[0].tipo === 'Fusion' || nuevos[0].tipo === 'Incrementado') {
+              nuevos[0].tareas.a1.habilitado = true;
+              nuevos[0].tareas.a2.habilitado = true;
+              nuevos[0].tareas.a3.habilitado = true;
+              nuevos[0].tareas.finalizado.habilitado = true;
+              this.huService.updateHu(nuevos[0]._id, nuevos[0]).subscribe(resul => {
+              });
+            }
           });
         }
         // Actualizo los detalles en el momento
@@ -329,30 +341,47 @@ export class GraficoComponent implements OnInit, OnDestroy {
 
   // Borra la OU hoja seleccionada de la Base de Datos
   private borraOU(nodo: any, callback: any) {
-    this.huService.deleteHu(nodo.nodes[0]).subscribe(response => {
-      if (response === null) {
-        callback(null);
-      } else {
-        this.contadorService.decrementa();
-        if (response.padres[0] !== undefined) {
-          this.huService.getHijos(response.padres[0]).subscribe(res => {
-            if (res.length === 1) {
-              res[0].tipo = 'Warning';
-              this.huService.updateHu(res[0]._id, res[0]).subscribe(nuevo => {
-                this.nodes.update({ id: res[0]._id, group: 'Warning' });
+    let padres: HistoriaUsuario[];
+    this.huService.getPadres(nodo.nodes[0]).subscribe(res => {
+      padres = res;
+      this.huService.deleteHu(nodo.nodes[0]).subscribe(response => {
+        if (response === null) {
+          callback(null);
+        } else {
+          this.contadorService.decrementa();
+          // Si sólo queda un hermano pasa a ser de tipo Warning
+          if (response.padres[0] !== undefined) {
+            this.huService.getHijos(response.padres[0]).subscribe(res => {
+              if (res.length === 1) {
+                res[0].tipo = 'Warning';
+                this.huService.updateHu(res[0]._id, res[0]).subscribe(nuevo => {
+                  this.nodes.update({ id: res[0]._id, group: 'Warning' });
+                });
+              }
+            });
+          }
+          // Si era de tipo Fusión o Incrementado sus padres dejan de tener capadas las tareas correspondientes
+          let nuevasTareas: HistoriaUsuario[];
+          if (response.tipo === 'Fusion' || response.tipo === 'Incrementado') {
+              this.huService.getHu(padres[0].padres[0]).subscribe(abu => {
+                nuevasTareas = this.tareasService.setTareas(abu, [], padres);
+                for (const tarea of nuevasTareas) {
+                  this.huService.updateHu(tarea._id, tarea).subscribe(nuevo => {
+                    this.nodes.update({ id: tarea._id, color: {background: this.tareasService.colorTarea(tarea.tareas)}});
+                  });
+                }
               });
-            }
-          });
+          }
+          callback(nodo);
         }
-        callback(nodo);
-      }
-    },
-      error => {
-        this.errorMessage = <any>error;
-        if (this.errorMessage != null) {
-          console.log(this.errorMessage);
-        }
-      });
+      },
+        error => {
+          this.errorMessage = <any>error;
+          if (this.errorMessage != null) {
+            console.log(this.errorMessage);
+          }
+        });
+    });
   }
 
   // Borra la Iteración hoja seleccionada de la Base de Datos

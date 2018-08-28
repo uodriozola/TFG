@@ -16,6 +16,8 @@ export class PortadaComponent implements OnInit {
 
   public formulario: FormGroup;
   public usuario: Usuario;
+  public logeado: Boolean;
+  public errorMessage: any;
 
   constructor(private fb: FormBuilder,
     private router: Router,
@@ -47,6 +49,8 @@ export class PortadaComponent implements OnInit {
       if (!res) {
         alert('Error en el servidor');
       } else {
+        this.logeado = true;
+        this.usuarioService.updateUsername(true);
         this.router.navigateByUrl('inicio');
       }
     });

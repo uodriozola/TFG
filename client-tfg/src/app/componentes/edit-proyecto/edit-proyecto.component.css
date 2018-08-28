@@ -1,0 +1,18 @@
+.modal-header {
+    background-color: #313C74;
+    color: white;
+    border-bottom: 2px solid white;
+}
+
+.modal-body {
+    background-color: #EEEEEE;
+}
+
+.modal-footer {
+    border-top: 2px solid rgb(122, 133, 187);
+    background-color: #D4DBE7;
+}
+
+.close {
+    color: white;
+}

@@ -1,15 +1,26 @@
 <div *ngIf="proyecto" class="proyecto">
   <div class="titulo jumbotron">
-    <h1>{{proyecto.nombre}}</h1>
-    <p>{{proyecto.descripcion}}</p>
+    <div class="row">
+      <div class="col">
+        <h1 id="nombre">{{proyecto.nombre}}</h1>
+      </div>
+      <div class="col">
+        <button type="button" class="btn btn-primary" (click)="editarProyecto()">Edit</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <p>{{proyecto.descripcion}}</p>
+      </div>
+    </div>
   </div>
   <div class="botonIteraciones">
-      <button type="button" class="btn btn-primary" (click)="addIteration()">Add Iteration</button>
+    <button type="button" class="btn btn-primary" (click)="addIteration()">Add Iteration</button>
   </div>
   <div class="grafico">
     <app-grafico id="grafico" [proyectoID]="proyecto._id"></app-grafico>
   </div>
   <div class="detalles">
-    <app-detalles [proyectoID]="proyecto._id"></app-detalles>
+    <app-detalles [proyectoID]="proyecto._id" [username]="username"></app-detalles>
   </div>
 </div>

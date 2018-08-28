@@ -1,4 +1,5 @@
 import { Tareas } from './tareas';
+import { Proyecto } from './proyecto';
 
 export interface HistoriaUsuario {
   _id: String;
@@ -12,5 +13,6 @@ export interface HistoriaUsuario {
   iteracion: number;
   padres: String[];
   proyectoID: String;
-
+  proyectoRel: Proyecto;
+  ouRel: HistoriaUsuario;
 }

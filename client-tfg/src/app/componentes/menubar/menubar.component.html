@@ -5,7 +5,10 @@
   </button>
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav mr-auto">
-      <li class="nav-item">
+      <li *ngIf="!logeado" class="nav-item active">
+        <a routerLink="/portada" [routerLinkActive]="['active']" class="navbar-brand" href="#">Login</a>
+      </li>
+      <li *ngIf="logeado" class="nav-item">
         <a routerLink="/inicio" [routerLinkActive]="['active']" class="navbar-brand" href="#">Home</a>
       </li>
       <li class="nav-item active">
@@ -13,7 +16,7 @@
       </li>
     </ul>
   </div>
-  <a href="javascript:void(0);" (click)="logout()"><span class="fa fa-user"></span> Logout</a>
+  <a *ngIf="logeado" href="javascript:void(0);" (click)="logout()"><span class="fa fa-user"></span> Logout</a>
 </nav>
 <div id="contenido">
   <router-outlet class="contenido"></router-outlet>

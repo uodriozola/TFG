@@ -11,6 +11,8 @@ var huSchema = Schema({
     iteracion: Number,
     posX: Number,
     posY: Number,
+    proyectoRel: String,
+    ouRel: String,
     tareas: {
         a1: { realizado: Boolean, habilitado: Boolean },
         a2: { realizado: Boolean, habilitado: Boolean },

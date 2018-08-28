@@ -101,7 +101,7 @@ function getAscendientes(req, res) {
                     Hu.find({ proyecto: proyectoId, _id: { $in: val[0].padres } })
                         .exec((err, doc) => {
                             doc.forEach(elem => {
-                                if (elem.tipo !== 'Fusion' && elem.tipo !== 'Incrementado') {
+                                if (elem.tipo === 'Division') {
                                 ascendientes.push(elem);
                                 ids.push(elem._id);
                             }

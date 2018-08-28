@@ -3,6 +3,7 @@
 var Iteracion = require('../modelos/iteracion');
 var Hu = require('../modelos/hu');
 var Proyecto = require('../modelos/proyecto');
+var Usuario = require('../modelos/usuario');
 
 function getProyecto(req, res) {
     var proyectoId = req.params.id;
@@ -14,22 +15,35 @@ function getProyecto(req, res) {
             if(!proyecto) {
                 res.status(404).send("El proyecto no existe");
             } else {
-                res.status(200).send(proyecto);
+                Usuario.populate(proyecto, {path: 'usuario'}, (err, proyecto) => {
+                    if(err) {
+                        res.status(500).send({message: "Error en la petición"});
+                    } else {
+                        res.status(200).send(proyecto);
+                    }
+                });
             }
         }
     });
 }
 
 function getProyectos(req, res) {
+    var usuarioID = req.params.usuario;
 
-    Proyecto.find({}, (err, proyectos) => {
+    Proyecto.find({ usuario: usuarioID }, (err, proyectos) => {
         if (err) {
             return res.status(500).send({message: "Error en la petición"});
         } else {
             if(!proyectos) {
                 res.status(404).send("No hay proyectos");
             } else {
-                res.status(200).send(proyectos);
+                Usuario.populate(proyectos, {path: 'usuario'}, (err, proyectos) => {
+                    if(err) {
+                        res.status(500).send({message: "Error en la petición"});
+                    } else {
+                        res.status(200).send(proyectos);
+                    }
+                });
             }
         }
     });
@@ -41,6 +55,7 @@ function saveProyecto(req, res) {
     var params = req.body;
     proyecto.nombre = params.nombre;
     proyecto.descripcion = params.descripcion;
+    proyecto.usuario = params.username;
 
     proyecto.save((err, proyectoStored) => {
         if(err) {

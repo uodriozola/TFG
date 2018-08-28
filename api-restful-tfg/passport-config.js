@@ -12,10 +12,10 @@ passport.use('local', new LocalStrategy({
         Usuario.findOne({ username: username }, function (err, user) {
             if (err) { return done(err); }
             if (!user) {
-                return done(null, false, { message: 'Incorrect username.' });
+                return done(null, false, { message: 'Usuario incorrecto' });
             }
             if (!user.isValid(password)) {
-                return done(null, false, { message: 'Incorrect password.' });
+                return done(null, false, { message: 'Password incorrecto' });
             }
             return done(null, user);
         });

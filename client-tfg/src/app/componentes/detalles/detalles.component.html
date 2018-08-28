@@ -1,6 +1,9 @@
 <div *ngIf="huSel" class="infoHu">
   <form [formGroup]="formulario" (ngSubmit)="cambiaHu()">
-    <h2>User Objective</h2>
+    <div class="form-group">
+      <h2 id="titulo">User Objective {{hu.numero}}</h2>
+      <input type="text" class="form-control" id="numeroInput" formControlName="numero" name="numero">
+    </div>
     <div class="form-group">
       <label for="nombreInput">Name:</label>
       <input type="text" class="form-control" id="nombreInput" formControlName="nombre" name="nombre">
@@ -19,33 +22,45 @@
         <option *ngFor="let tipo of tipos" [value]="tipo">{{tipo}}</option>
       </select>
     </div>
+    <div *ngIf="esReutilizado" class="form-group">
+      <label for="proyectoInput">Proyect:</label>
+      <select id="proyectoInput" class="form-control" formControlName="proyectoRel">
+        <option *ngFor="let proyecto of proyectos" [value]="proyecto.nombre">{{proyecto.nombre}}</option>
+      </select>
+    </div>
+    <div *ngIf="esReutilizado" class="form-group">
+      <label for="OUInput">User Objective:</label>
+      <select id="OUInput" class="form-control" formControlName="ouRel">
+        <option *ngFor="let ou of ousActual" [value]="ou.nombre">{{ou.nombre}}</option>
+      </select>
+    </div>
     <div class="form-group">
-        <label>Tasks: </label>
-        <div class="form-check-inline">
-          <input class="form-check-input" type="checkbox" value="" name="a1" id="a1" formControlName="a1">
-          <label class="form-check-label" for="a1">
-            A1
-          </label>
-        </div>
-        <div class="form-check-inline">
-          <input class="form-check-input" type="checkbox" value="" name="a2" id="a2" formControlName="a2">
-          <label class="form-check-label" for="a2">
-            A2
-          </label>
-        </div>
-        <div class="form-check-inline">
-          <input class="form-check-input" type="checkbox" value="" name="a3" id="a3" formControlName="a3" >
-          <label class="form-check-label" for="a3">
-            A3
-          </label>
-        </div>
-        <div class="form-check-inline">
-          <input class="form-check-input" type="checkbox" value="" name="finalizado" id="finalizado" formControlName="finalizado">
-          <label class="form-check-label" for="finalizado">
-            Finalizado
-          </label>
-        </div>
+      <label>Tasks: </label>
+      <div class="form-check-inline">
+        <input class="form-check-input" type="checkbox" value="" name="a1" id="a1" formControlName="a1">
+        <label class="form-check-label" for="a1">
+          A1
+        </label>
       </div>
+      <div class="form-check-inline">
+        <input class="form-check-input" type="checkbox" value="" name="a2" id="a2" formControlName="a2">
+        <label class="form-check-label" for="a2">
+          A2
+        </label>
+      </div>
+      <div class="form-check-inline">
+        <input class="form-check-input" type="checkbox" value="" name="a3" id="a3" formControlName="a3">
+        <label class="form-check-label" for="a3">
+          A3
+        </label>
+      </div>
+      <div class="form-check-inline">
+        <input class="form-check-input" type="checkbox" value="" name="finalizado" id="finalizado" formControlName="finalizado">
+        <label class="form-check-label" for="finalizado">
+          Finalizado
+        </label>
+      </div>
+    </div>
     <button type="submit" class="btn btn-primary" [disabled]="!formulario.valid">Apply changes</button>
   </form>
 </div>
@@ -60,7 +75,8 @@
     </div>
     <div class="form-group">
       <label for="descripcionInput">Description:</label>
-      <textarea type="text" class="form-control" id="descripcionInput" placeholder="Description of the User Goal" formControlName="descripcion" name="descripcion"></textarea>
+      <textarea type="text" class="form-control" id="descripcionInput" placeholder="Description of the User Goal" formControlName="descripcion"
+        name="descripcion"></textarea>
     </div>
     <div class="form-group">
       <label for="iteracionInput">Iteration:</label>
