@@ -192,7 +192,7 @@ export class DetallesComponent implements OnInit, OnDestroy {
       if (this.hu.padres.length === 0 && res.length === 0) {
         this.tipos = ['Direct', 'Increment', 'Reused'];
       } else {
-        this.tipos = [this.hu.tipo];
+        this.tipos = [this.hu.tipo, 'Reused'];
       }
     });
   }

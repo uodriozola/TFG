@@ -42,7 +42,7 @@ export class TareasService {
     return tareas;
   }
 
-  // Dado un OU, en función de su tipo, decide las tareas que tienen realizadas sus padres o hijos
+  // Dado un OU, en función de su tipo, decide las tareas que tienen realizadas y habilitadas sus padres o hijos
   public setTareas(hu: HistoriaUsuario, padres: HistoriaUsuario[], hijos: HistoriaUsuario[]): HistoriaUsuario[] {
     const res: HistoriaUsuario[] = [];
     // Si tiene más de un padre los padres heredan del hijo

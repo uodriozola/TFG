@@ -39,14 +39,14 @@ export class UsuarioService {
     return this.httpClient.post<Usuario>(this.url + '/login', params, {headers: headers, withCredentials: true});
   }
 
-  getUsuario() {
-    return this.httpClient.get(this.url + '/usuario', {
+  getUsuario(): Observable<Usuario> {
+    return this.httpClient.get<Usuario>(this.url + '/usuario', {
       withCredentials: true
     });
   }
 
-  logoutUsuario() {
-    return this.httpClient.get(this.url + '/logout', {
+  logoutUsuario(): Observable<Usuario> {
+    return this.httpClient.get<Usuario>(this.url + '/logout', {
       withCredentials: true
     });
   }

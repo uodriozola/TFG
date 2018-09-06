@@ -13,6 +13,7 @@ function saveUsuario(req, res) {
     usuario.fechaCreacion = Date.now();
 
     usuario.save((err, usuarioStored) => {
+
         if (err) {
             res.status(500).send({ mesage: "Error al crear la cuenta" });
         } else {

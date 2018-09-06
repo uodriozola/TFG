@@ -4,13 +4,12 @@ import { HuService } from '../../servicios/hu.service'; // importo el servicio h
 import { ComunicacionService } from '../../servicios/comunicacion.service';
 import { TareasService } from '../../servicios/tareas.service';
 import { ContadorService } from '../../servicios/contador.service';
-import { ActivatedRoute } from '@angular/router';
 // tslint:disable-next-line:import-blacklist
 import { Observable } from 'rxjs';
 import { IteracionService } from '../../servicios/iteracion.service';
 import { Iteracion } from '../../clases/iteracion';
 import { options } from './options/options';
-import { Tareas } from '../../clases/tareas';
+import { forkJoin } from 'rxjs/observable/forkJoin';
 declare var vis: any;
 
 @Component({
@@ -43,8 +42,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
     private iteracionService: IteracionService,
     private comunicacionService: ComunicacionService,
     private tareasService: TareasService,
-    private contadorService: ContadorService,
-    private _route: ActivatedRoute) {
+    private contadorService: ContadorService) {
 
   }
 
@@ -101,25 +99,25 @@ export class GraficoComponent implements OnInit, OnDestroy {
 
     // Paso a huService el nodo seleccionado si no es de tipo Iteraciones
     this.network.on('select', (params) => {
-        let node;
-        // Comprobamos si hay algún nodo que no sea de tipo OU seleccionado
-        const select = params.nodes.find(res => res === 'flecha-izq' || res === 'flecha-der' || !isNaN(+res));
-        // Si todos los nodos seleccionados son de tipo OU
-        if (select === undefined) {
-          node = this.nodes.get(params.nodes[0]);
-          this.iteracion = undefined;
-          if (node.id !== undefined) {
-            this.huService.getHu(node.id).subscribe(res => {
-              this.hu = res;
-              this.comunicacionService.updateNodoSel(this.hu);
-            });
-          } else {
-            this.hu = undefined;
-            this.comunicacionService.updateNodoSel(undefined);
-          }
+      let node;
+      // Comprobamos si hay algún nodo que no sea de tipo OU seleccionado
+      const select = params.nodes.find(res => res === 'flecha-izq' || res === 'flecha-der' || !isNaN(+res));
+      // Si todos los nodos seleccionados son de tipo OU
+      if (select === undefined) {
+        node = this.nodes.get(params.nodes[0]);
+        this.iteracion = undefined;
+        if (node.id !== undefined) {
+          this.huService.getHu(node.id).subscribe(res => {
+            this.hu = res;
+            this.comunicacionService.updateNodoSel(this.hu);
+          });
         } else {
-          node = this.nodes.get(select);
-          // Si se selecciona un nodo tipo flecha
+          this.hu = undefined;
+          this.comunicacionService.updateNodoSel(undefined);
+        }
+      } else {
+        node = this.nodes.get(select);
+        // Si se selecciona un nodo tipo flecha
         if (node.id === 'flecha-izq' || node.id === 'flecha-der') {
           this.selecItersLado(node);
         } else /* Si se selecciona un nodo de tipo iteración */ {
@@ -164,20 +162,20 @@ export class GraficoComponent implements OnInit, OnDestroy {
       } else {
         color = this.tareasService.colorTarea(hu.tareas);
       }
-      Observable.forkJoin(this.huService.getPadres(hu._id),
-      this.huService.getDescendientes(hu._id)).subscribe(res => {
-        const padres = res[0];
-        const descendientes = res[1];
-        const cambios = this.tareasService.setTareas(hu, padres, descendientes);
-        this.nodes.update({ id: hu._id, label: hu.numero, group: hu.tipo, color: { background: color } });
-        for (const cambio of cambios) {
-          this.huService.updateHu(cambio._id, cambio).subscribe(resul => {
-            color = this.tareasService.colorTarea(cambio.tareas);
-            this.nodes.update({ id: cambio._id, color: { background: color } });
-          });
-        }
-        this.comunicacionService.updateNodoSel(hu);
-      });
+      Observable.forkJoin(this.huService.getAscendientes(hu._id),
+        this.huService.getDescendientes(hu._id)).subscribe(res => {
+          const ascendientes = res[0];
+          const descendientes = res[1];
+          const cambios = this.tareasService.setTareas(hu, ascendientes, descendientes);
+          this.nodes.update({ id: hu._id, label: hu.numero, group: hu.tipo, color: { background: color } });
+          for (const cambio of cambios) {
+            this.huService.updateHu(cambio._id, cambio).subscribe(resul => {
+              color = this.tareasService.colorTarea(cambio.tareas);
+              this.nodes.update({ id: cambio._id, color: { background: color } });
+            });
+          }
+          this.comunicacionService.updateNodoSel(hu);
+        });
     });
 
     // Visualizamos en el gráfico la HU creada desde Detalles
@@ -225,7 +223,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
         });
         this.edges.add({
           from: '-' + iteracion.numero, to: iteracion.numero,
-          color: { background : 'grey', dashes: true, arrows: { to: { enabled: false }}}
+          color: { background: 'grey', dashes: true, arrows: { to: { enabled: false } } }
         });
       }
     } else {
@@ -266,8 +264,10 @@ export class GraficoComponent implements OnInit, OnDestroy {
       numero: this.contadorService.contador, iteracion: 0, padres: [],
       proyectoRel: undefined,
       ouRel: undefined,
-      tareas: { a1: { realizado: false, habilitado: true }, a2: { realizado: false, habilitado: true },
-      a3: { realizado: false, habilitado: true }, finalizado: { realizado: false, habilitado: true }}
+      tareas: {
+        a1: { realizado: false, habilitado: true }, a2: { realizado: false, habilitado: true },
+        a3: { realizado: false, habilitado: true }, finalizado: { realizado: false, habilitado: true }
+      }
     };
 
     nodo.label = hu.numero;
@@ -290,42 +290,50 @@ export class GraficoComponent implements OnInit, OnDestroy {
       this.huService.getHijos(arista.from),
       this.huService.getPadres(arista.to),
       this.huService.getDescendientes(arista.to),
-      this.huService.getAscendientes(arista.to)).subscribe(res => {
+      this.huService.getAscendientes(arista.to),
+      this.huService.getAscendientes(arista.from)).subscribe(res => {
         const hijo = res[0];
         const padre = res[1];
         const hermanos = res[2];
         const padres = res[3];
         const descendientes = res[4];
-        const ascendientes = res[5];
-      const nuevos = this.comunicacionService.setValores(padre, hijo, hermanos, padres, descendientes, ascendientes);
-      // Si el tipo devuelto no cumple los criterios establecidos no se crea la relación
-      const tipo = this.nodes.get(arista.to).group;
-      if (nuevos[0].tipo === tipo && nuevos[0].tipo !== 'Fusion' && nuevos[0].tipo !== 'Incremented') {
-        callback(null);
-      } else {
-        for (const nuevo of nuevos) {
-          if (nuevo.tipo === 'Warning') {
-            this.nodes.update({ id: nuevo._id, group: nuevo.tipo });
-          } else {
-            this.nodes.update({ id: nuevo._id, group: nuevo.tipo,
-              color: {background: this.tareasService.colorTarea(nuevo.tareas)}});
-          }
-          this.huService.updateHu(nuevo._id, nuevo).subscribe(resul => {
-            if (nuevos[0].tipo === 'Fusion' || nuevos[0].tipo === 'Incrementado') {
-              nuevos[0].tareas.a1.habilitado = true;
-              nuevos[0].tareas.a2.habilitado = true;
-              nuevos[0].tareas.a3.habilitado = true;
-              nuevos[0].tareas.finalizado.habilitado = true;
-              this.huService.updateHu(nuevos[0]._id, nuevos[0]).subscribe(resul => {
+        const ascendientesViejos = res[5];
+        const ascendientesNuevos = res[6];
+        let ascendientes = ascendientesViejos;
+        if (padre.tipo === 'Fusion' || padre.tipo === 'Incremented') {
+          ascendientes = ascendientesViejos.concat(ascendientesNuevos);
+        }
+        const nuevos = this.comunicacionService.setValores(padre, hijo, hermanos, padres, descendientes, ascendientes);
+        // Si el tipo devuelto no cumple los criterios establecidos no se crea la relación
+        const tipo = this.nodes.get(arista.to).group;
+        if (nuevos[0].tipo === tipo && nuevos[0].tipo !== 'Fusion' && nuevos[0].tipo !== 'Incremented') {
+          callback(null);
+        } else {
+          for (const nuevo of nuevos) {
+            if (nuevo.tipo === 'Warning') {
+              this.nodes.update({ id: nuevo._id, group: nuevo.tipo });
+            } else {
+              this.nodes.update({
+                id: nuevo._id, group: nuevo.tipo,
+                color: { background: this.tareasService.colorTarea(nuevo.tareas) }
               });
             }
-          });
+            this.huService.updateHu(nuevo._id, nuevo).subscribe(resul => {
+              if (nuevos[0].tipo === 'Fusion' || nuevos[0].tipo === 'Incrementado') {
+                nuevos[0].tareas.a1.habilitado = true;
+                nuevos[0].tareas.a2.habilitado = true;
+                nuevos[0].tareas.a3.habilitado = true;
+                nuevos[0].tareas.finalizado.habilitado = true;
+                this.huService.updateHu(nuevos[0]._id, nuevos[0]).subscribe(rest => {
+                });
+              }
+            });
+          }
+          // Actualizo los detalles en el momento
+          this.comunicacionService.updateNodoSel(undefined);
+          callback(arista);
         }
-        // Actualizo los detalles en el momento
-        this.comunicacionService.updateNodoSel(undefined);
-        callback(arista);
-      }
-    });
+      });
   }
 
   // Decide si tiene que borrar una OU o una Iteración, en otro caso no realiza el borrado
@@ -342,46 +350,55 @@ export class GraficoComponent implements OnInit, OnDestroy {
   // Borra la OU hoja seleccionada de la Base de Datos
   private borraOU(nodo: any, callback: any) {
     let padres: HistoriaUsuario[];
-    this.huService.getPadres(nodo.nodes[0]).subscribe(res => {
-      padres = res;
-      this.huService.deleteHu(nodo.nodes[0]).subscribe(response => {
-        if (response === null) {
-          callback(null);
-        } else {
-          this.contadorService.decrementa();
-          // Si sólo queda un hermano pasa a ser de tipo Warning
-          if (response.padres[0] !== undefined) {
-            this.huService.getHijos(response.padres[0]).subscribe(res => {
-              if (res.length === 1) {
-                res[0].tipo = 'Warning';
-                this.huService.updateHu(res[0]._id, res[0]).subscribe(nuevo => {
-                  this.nodes.update({ id: res[0]._id, group: 'Warning' });
-                });
-              }
-            });
-          }
-          // Si era de tipo Fusión o Incrementado sus padres dejan de tener capadas las tareas correspondientes
-          let nuevasTareas: HistoriaUsuario[];
-          if (response.tipo === 'Fusion' || response.tipo === 'Incrementado') {
-              this.huService.getHu(padres[0].padres[0]).subscribe(abu => {
-                nuevasTareas = this.tareasService.setTareas(abu, [], padres);
-                for (const tarea of nuevasTareas) {
-                  this.huService.updateHu(tarea._id, tarea).subscribe(nuevo => {
-                    this.nodes.update({ id: tarea._id, color: {background: this.tareasService.colorTarea(tarea.tareas)}});
+    let ascendientes: HistoriaUsuario[];
+    forkJoin(this.huService.getPadres(nodo.nodes[0]),
+      this.huService.getAscendientes(nodo.nodes[0])).subscribe(rest => {
+        padres = rest[0];
+        ascendientes = rest[1];
+        this.huService.deleteHu(nodo.nodes[0]).subscribe(response => {
+          if (response === null) {
+            callback(null);
+          } else {
+            this.contadorService.decrementa();
+            // Si sólo queda un hermano pasa a ser de tipo Warning
+            if (response.padres[0] !== undefined) {
+              this.huService.getHijos(response.padres[0]).subscribe(res => {
+                if (res.length === 1) {
+                  res[0].tipo = 'Warning';
+                  this.huService.updateHu(res[0]._id, res[0]).subscribe(nuevo => {
+                    this.nodes.update({ id: res[0]._id, group: 'Warning' });
                   });
                 }
               });
-          }
-          callback(nodo);
-        }
-      },
-        error => {
-          this.errorMessage = <any>error;
-          if (this.errorMessage != null) {
-            console.log(this.errorMessage);
+            }
+            // Si era de tipo Fusión o Incrementado sus padres dejan de tener capadas las tareas correspondientes
+            let nuevasTareas: HistoriaUsuario[];
+            if (response.tipo === 'Fusion' || response.tipo === 'Incrementado') {
+              for (const ascendiente of padres) {
+                if (ascendiente.padres.length === 0 || ascendiente.padres.length > 1) {
+                  ascendiente.tareas.a1.habilitado = true;
+                  ascendiente.tareas.a2.habilitado = true;
+                  ascendiente.tareas.a3.habilitado = true;
+                  ascendiente.tareas.finalizado.habilitado = true;
+                  this.huService.updateHu(ascendiente._id, ascendiente).subscribe(nuevo => {
+                    this.nodes.update({ id: ascendiente._id, color: { background: this.tareasService.colorTarea(ascendiente.tareas) } });
+                  });
+                } else {
+                  this.huService.getPadres(ascendiente._id).subscribe(abuelos => {
+                    nuevasTareas = this.tareasService.setTareas(abuelos[0], [], [ascendiente, ascendiente]);
+                    for (const tarea of nuevasTareas) {
+                      this.huService.updateHu(tarea._id, tarea).subscribe(nuevo => {
+                        this.nodes.update({ id: tarea._id, color: { background: this.tareasService.colorTarea(tarea.tareas) } });
+                      });
+                    }
+                  });
+                }
+              }
+            }
+            callback(nodo);
           }
         });
-    });
+      });
   }
 
   // Borra la Iteración hoja seleccionada de la Base de Datos
@@ -409,65 +426,65 @@ export class GraficoComponent implements OnInit, OnDestroy {
 
   // Guarda en la base de datos las posiciones de los nodos pasados como parámetro
   private guardaPosiciones(posiciones: any) {
-      for (const pos of Object.keys(posiciones)) {
-        // Si es de tipo flecha (moviendose en horizontal)
-        if (Object.keys(posiciones).filter(res => res === 'flecha-der' || res === 'flecha-izq').length > 0) {
-          if (!isNaN(+pos)) {
-            this.guardaPosFlechas(pos, posiciones[pos]);
-          }
-          // Si es de tipo OU
-        } else if (isNaN(+pos)) {
-          this.guardaPosOU(pos, posiciones[pos]);
-        } else /* Si es de tipo iteración (moviendose en vertical) */ {
-          if (+pos > 0) {
-            this.guardaPosIter(pos, posiciones[pos]);
-          }
+    for (const pos of Object.keys(posiciones)) {
+      // Si es de tipo flecha (moviendose en horizontal)
+      if (Object.keys(posiciones).filter(res => res === 'flecha-der' || res === 'flecha-izq').length > 0) {
+        if (!isNaN(+pos)) {
+          this.guardaPosFlechas(pos, posiciones[pos]);
+        }
+        // Si es de tipo OU
+      } else if (isNaN(+pos)) {
+        this.guardaPosOU(pos, posiciones[pos]);
+      } else /* Si es de tipo iteración (moviendose en vertical) */ {
+        if (+pos > 0) {
+          this.guardaPosIter(pos, posiciones[pos]);
         }
       }
+    }
   }
 
   guardaPosFlechas(id: String, posicion: any) {
     const posAbs = Math.abs(+id);
-            this.iteracionService.getIteracion(this.nodes.get(Math.abs(posAbs).toString()).brokenImage).subscribe(iter => {
-              if (+id > 0) {
-                iter.posXder = posicion.x;
-                this.nodes.update({ id: id, x: iter.posXder });
-                this.nodes.update({ id: 'flecha-der', x: iter.posXder });
-              } else {
-                iter.posXizq = posicion.x;
-                this.nodes.update({ id: id, x: iter.posXizq });
-                this.nodes.update({ id: 'flecha-izq', x: iter.posXizq });
-              }
-              this.iteracionService.updateIteracion(iter._id, iter).subscribe(nuevo => {
-              });
-            });
+    this.iteracionService.getIteracion(this.nodes.get(Math.abs(posAbs).toString()).brokenImage).subscribe(iter => {
+      if (+id > 0) {
+        iter.posXder = posicion.x;
+        this.nodes.update({ id: id, x: iter.posXder });
+        this.nodes.update({ id: 'flecha-der', x: iter.posXder });
+      } else {
+        iter.posXizq = posicion.x;
+        this.nodes.update({ id: id, x: iter.posXizq });
+        this.nodes.update({ id: 'flecha-izq', x: iter.posXizq });
+      }
+      this.iteracionService.updateIteracion(iter._id, iter).subscribe(nuevo => {
+      });
+    });
   }
 
   guardaPosIter(id: String, posicion: any) {
     // Compruebo si hay algún nodo que tenga que cambiar su iteración
     Observable.forkJoin(this.huService.getHusIter(this.proyectoID, this.iteracion.numero),
-    this.huService.getHusIter(this.proyectoID, this.iteracion.numero - 1)).subscribe(res => {
-      // En los de la iteración actual miramos si pertenecen a la anterior
-      res[0].forEach(n => {
-        if (n.posY < posicion.y) {
-          n.iteracion -= 1;
-          this.huService.updateHu(n._id, n).subscribe(nuevo => {
-          });
-        }
+      this.huService.getHusIter(this.proyectoID, this.iteracion.numero - 1)).subscribe(res => {
+        // En los de la iteración actual miramos si pertenecen a la anterior
+        res[0].forEach(n => {
+          if (n.posY < posicion.y) {
+            n.iteracion -= 1;
+            this.huService.updateHu(n._id, n).subscribe(nuevo => {
+            });
+          }
+        });
+        // En los de la iteración anterior miramos si ahora pertenecen a la actual
+        res[1].forEach(n => {
+          if (n.posY > posicion.y) {
+            n.iteracion += 1;
+            this.huService.updateHu(n._id, n).subscribe(nuevo => {
+            });
+          }
+        });
       });
-      // En los de la iteración anterior miramos si ahora pertenecen a la actual
-      res[1].forEach(n => {
-        if (n.posY > posicion.y) {
-          n.iteracion += 1;
-          this.huService.updateHu(n._id, n).subscribe(nuevo => {
-          });
-        }
-      });
+    this.iteracion.posY = posicion.y;
+    this.iteracionService.updateIteracion(this.iteracion._id, this.iteracion).subscribe(nuevo => {
+      this.nodes.update({ id: id, y: this.iteracion.posY });
     });
-  this.iteracion.posY = posicion.y;
-  this.iteracionService.updateIteracion(this.iteracion._id, this.iteracion).subscribe(nuevo => {
-    this.nodes.update({ id: id, y: this.iteracion.posY });
-  });
   }
 
   guardaPosOU(id: String, posicion: any) {
@@ -522,7 +539,7 @@ export class GraficoComponent implements OnInit, OnDestroy {
 
       this.edges.add({
         from: '-' + this.contadorService.iteraciones, to: this.contadorService.iteraciones,
-        color: { background: 'grey', dashes: true, arrows: { to: { enabled: false }}}
+        color: { background: 'grey', dashes: true, arrows: { to: { enabled: false } } }
       });
       // Si hay algún nodo por debajo de la iteración añadida se la modifico
       this.huService.getHusIter(this.proyectoID, this.contadorService.iteraciones - 1).subscribe(iter => {

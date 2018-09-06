@@ -1,6 +1,6 @@
  import { HistoriaUsuario } from './hu'; // importo la clase HistoriaUsuario
 
-export var HISTORIASUSUARIO: HistoriaUsuario [] = []; // Declaro una variable que contendrá un array de HistoriaUsuario.
+export let HISTORIASUSUARIO: HistoriaUsuario [] = []; // Declaro una variable que contendrá un array de HistoriaUsuario.
 /*
 var hu1 = new HistoriaUsuario('1', 'Prueba 1', 'Es una historia de usuario de prueba');
 var hu2 = new HistoriaUsuario('2', 'Prueba 2', 'Es una historia de usuario de prueba 2');

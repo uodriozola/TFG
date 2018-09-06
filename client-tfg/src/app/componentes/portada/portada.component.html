@@ -9,6 +9,7 @@
             <div class="form-group">
                 <input type="password" class="form-control" id="passwordInput" formControlName="password" name="password" placeholder="Password">
             </div>
+            <div id="error" *ngIf='error'>{{error}}</div>
             <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit" [disabled]="!formulario.valid">Sign in</button>
         </form>
         <a href=javascript:void(0); class="forgot-password" (click)="registrarse()">

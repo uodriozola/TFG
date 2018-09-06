@@ -31,16 +31,10 @@ export class HuService {
   }
 
   // Coge de la BD todas las historias del usuario del proyecto pasado como parámetro de la iteración correspondiente
-  getHusIter(proyectoId, iteracion: Number): Observable<HistoriaUsuario[]> {
+  getHusIter(proyectoId: String, iteracion: Number): Observable<HistoriaUsuario[]> {
     const ruta = this.url + '/hus/' + proyectoId + '/' + iteracion;
     return this.httpClient.get<HistoriaUsuario[]>(ruta);
   }
-
-  // Cojo de la BD los ID de los hijos del proyecto cuyo ID paso como parámetro
-  public getHusTipo(hijoID: String, padreID: String): Observable<any[]> {
-    const ruta = this.url + '/hus/tipos/' + this.proyectoID + '/' + hijoID + '/' + padreID;
-    return this.httpClient.get<any[]>(ruta);
-}
 
   // Cojo de la BD los ID de los hijos del proyecto cuyo ID paso como parámetro
   public getHijos(huID: String): Observable<HistoriaUsuario[]> {

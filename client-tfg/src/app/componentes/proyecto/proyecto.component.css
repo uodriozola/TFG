@@ -17,3 +17,16 @@
 .botonIteraciones {
     margin-left: 2%;
 }
+
+.titulo {
+    border-left: 5px;
+    border-right: 5px;
+    border-radius: 2%;
+    padding: 5px;
+    background-color: rgb(240, 232, 232);
+    margin-bottom: 5px;
+}
+
+.boton {
+    float: right;
+}

@@ -24,7 +24,7 @@ export class IteracionService {
   }
 
    // Coge de la BD todas las iteraciones del proyecto pasado como parámetro
-  getIteraciones(proyectoId): Observable<Iteracion[]> {
+  getIteraciones(proyectoId: String): Observable<Iteracion[]> {
     this.proyectoID = proyectoId;
     const ruta = this.url + '/iteraciones/' + proyectoId;
     return this.httpClient.get<Iteracion[]>(ruta);

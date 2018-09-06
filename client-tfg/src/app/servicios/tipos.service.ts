@@ -17,11 +17,12 @@ export class TiposService {
       hijo.tipo = 'Warning';
       // Si tiene más de un padre y ninguna es Increment entonces es Fusión
     } else if (hijo.padres.length > 1 && padres.filter(padre => (padre.tipo === 'Increment')).length === 0 &&
-      nuevoPadre.tipo !== 'Increment' && hijo.tipo !== 'Division') {
+      nuevoPadre.tipo !== 'Increment' && hijo.tipo !== 'Division' && hermanos.length === 0) {
       hijo.tipo = 'Fusion';
       // Si tiene un padre tipo Incremento y otro que no,  es Incrementado
     } else if ((padres.filter(padre => (padre.tipo === 'Increment')).length > 0 || nuevoPadre.tipo === 'Increment') &&
-      (padres.filter(padre => (padre.tipo !== 'Increment')).length > 0 || nuevoPadre.tipo !== 'Increment') && hijo.tipo !== 'Division') {
+      (padres.filter(padre => (padre.tipo !== 'Increment')).length > 0 || nuevoPadre.tipo !== 'Increment') && hijo.tipo !== 'Division'
+      && hermanos.length === 0) {
       hijo.tipo = 'Incremented';
       // Si tiene un padre y tiene hermanos es División
     } else if (hijo.padres.length === 1 && (hermanos.length > 1 || hermanos[0].tipo === 'Warning')) {

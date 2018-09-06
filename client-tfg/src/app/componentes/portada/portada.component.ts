@@ -18,6 +18,7 @@ export class PortadaComponent implements OnInit {
   public usuario: Usuario;
   public logeado: Boolean;
   public errorMessage: any;
+  public error: any = null;
 
   constructor(private fb: FormBuilder,
     private router: Router,
@@ -49,10 +50,15 @@ export class PortadaComponent implements OnInit {
       if (!res) {
         alert('Error en el servidor');
       } else {
+        this.error = null;
         this.logeado = true;
         this.usuarioService.updateUsername(true);
         this.router.navigateByUrl('inicio');
       }
+    },
+    error => {
+      this.error = 'Wrong user and password';
+      console.log('Ha ocurrido un error');
     });
   }
 
