@@ -5,6 +5,7 @@ import { Router, ActivatedRoute, Params} from '@angular/router';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Validaciones } from '../../validaciones/validaciones';
 import { Usuario } from '../../clases/usuario';
+import { UsuarioService } from '../../servicios/usuario.service';
 
 @Component({
   selector: 'app-registro',
@@ -16,8 +17,10 @@ export class RegistroComponent implements OnInit {
   public formulario: FormGroup;
   public errorMessage: any;
   public usuario: Usuario;
+  public error: any = null;
 
   constructor(private fb: FormBuilder,
+    private usuarioService: UsuarioService,
     private _route: ActivatedRoute,
     private _router: Router,
     public activeModal: NgbActiveModal) { }
@@ -48,7 +51,18 @@ export class RegistroComponent implements OnInit {
       username: this.formulario.value.username,
       password: this.formulario.value.password
     };
-    this.activeModal.close(this.usuario);
+    this.usuarioService.addUsuario(this.usuario).subscribe(res => {
+      if (!res) {
+        alert('Error en el servidor');
+      } else {
+        console.log('Usuario creado correctamente');
+        this.activeModal.close(this.usuario);
+      }
+    },
+    error => {
+      this.error = 'That username is already in use';
+      console.log('Ha ocurrido un error');
+    });
   }
 
 }

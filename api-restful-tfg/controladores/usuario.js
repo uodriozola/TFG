@@ -12,16 +12,24 @@ function saveUsuario(req, res) {
     usuario.password = Usuario.hashPassword(params.password);
     usuario.fechaCreacion = Date.now();
 
-    usuario.save((err, usuarioStored) => {
-
+    Usuario.findOne({ username: usuario.username }, (err, user) => {
         if (err) {
-            res.status(500).send({ mesage: "Error al crear la cuenta" });
+            res.status(500).send({mesage: "Error al registrar el usuario"});
+        } else if (user) {
+            res.status(401).send({mesage: "El nombre de usuario ya existe"});
         } else {
-            if (!usuarioStored) {
-                res.status(404).send({ message: "No se ha creado la cuenta" });
-            } else {
-                res.status(200).send(usuarioStored);
-            }
+            usuario.save((err, usuarioStored) => {
+
+                if (err) {
+                    res.status(500).send({ mesage: "Error al crear la cuenta" });
+                } else {
+                    if (!usuarioStored) {
+                        res.status(404).send({ message: "No se ha creado la cuenta" });
+                    } else {
+                        res.status(200).send(usuarioStored);
+                    }
+                }
+            });
         }
     });
 }

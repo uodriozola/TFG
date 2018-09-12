@@ -1,33 +1,79 @@
+<body>
+
+  <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
 
 
+    <main role="main" class="inner cover">
+      <h1 class="cover-heading">Gestión de proyectos ágiles.</h1>
+      <p class="lead">Este Trabajo de Fin de Grado consiste en la realización de una página web para la gestión de proyectos
+        informáticos según una metodología ágil y centrada en el usuario.</p>
+    </main>
 
-  <body class="text-center">
+    <p>Este proyecto ha desarrollado una herramienta web para la gestión de proyectos informáticos mediante diagramas de
+      Objetivos de Usuario. El proceso ágil y centrado en el usuario que queremos plasmar en dicho diagrama se basa en tres
+      conceptos clave:</p>
+    <ul>
+      <li>Iteraciones.</li>
+      <li>Objetivos de Usuario.</li>
+      <li>Tareas.</li>
+    </ul>
 
-    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-      <header class="masthead mb-auto">
-        <div class="inner">
-          <h3 class="masthead-brand">Cover</h3>
-          <nav class="nav nav-masthead justify-content-center">
-            <a class="nav-link active" href="#">Home</a>
-            <a class="nav-link" href="#">Features</a>
-            <a class="nav-link" href="#">Contact</a>
-          </nav>
-        </div>
-      </header>
 
-      <main role="main" class="inner cover">
-        <h1 class="cover-heading">Gestión de proyectos ágiles.</h1>
-        <p class="lead">Este Trabajo de Fin de Grado consiste en la realización de una página web para la gestión de proyectos informáticos según una metodología ágil y centrada en el usuario.</p>
-        <p class="lead">
-          <a href="#" class="btn btn-lg btn-secondary">Learn more</a>
-        </p>
-      </main>
+    <h3>Iteraciones</h3>
+    <p>Un proyecto consta de varias Iteraciones y en cada una de ellas habrá varios Objetivos de Usuario. Un proyecto siempre
+      comienza en la primera iteración y finaliza en la última.</p>
+    <p>Desde nuestra página Web podremos añadir iteraciones, moverlas y eliminarlas en función de las necesidades del proyecto.</p>
 
-      <footer class="mastfoot mt-auto">
-        <div class="inner">
-          <p>Página creada por <a href="https://twitter.com/u_odriozola">Unai Odriozola</a></p>
-        </div>
-      </footer>
-    </div>
-  </body>
+    <h3>Objetivos de Usuario</h3>
+    <p>Los Objetivos de Usuario son un concepto ágil y centrado en el usuario para especificar los requisitos. Los Objetivos
+      de Usuario expresan deseos de usuario y pueden coincidir con uno o más requisitos funcionales y/o requisitos no funcionales.</p>
+    <p>Los OUs continúan vivos a lo largo del proyecto hasta la entrega final, y pasan por procesos de división, integración
+      y ampliación. Las variaciones sobre un UO implican su reactivación, bien para corregir errores o para añadir pequeños
+      cambios.</p>
+    <p>Existe una tipología de Objetivos de Usuario en función de su fuente de creación (usuario o desarrollador) y en función
+      de su autonomía (completo o parcial). El Origen expresa el número de OUs a partir de los que se origina.</p>
+    <h5>Tipos de Objetivo de Usuario:</h5>
+    <ul>
+      <li>
+        <p>OU Directo o deseo directo del usuario. Aspecto: Circunferencia negra. Pueden surgir en cualquier iteración. Origen:
+          La primera vez 0. Sucesivas veces: >1.</p>
+        <img src="assets/images/Directo.jpg" />
+      </li>
+      <li>
+        <p>OU Indirecto o necesidad interna del proceso de desarrollo, derivado de OUs Directos o Indirectos. Pueden surgir
+          en cualquier iteración excepto en la 1. Son los siguientes:</p>
+        <ul>
+          <li>
+            <p>OU División: Los implicados en el proyecto pueden decidir dividir un OU en varios OUs División. Aspecto: Circunferencia
+              gris con puntos. Origen: 1.</p>
+            <img src="assets/images/Division.png" />
+          </li>
+          <li>
+            <p>OU Fusión: Durante el ciclo de vida del proyecto, puede ocurrir que varios OUs se fusionen para desarrollarse
+              en un único OU Indirecto fusión. Aspecto: Circunferencia gris. Origen: 2 o más.</p>
+            <img src="assets/images/Fusion.png" />
+          </li>
+        </ul>
+      </li>
+      <li>
+        <p>OU Incremento o ampliación de funcionalidad asociado a un OU Directo o Indirecto. Media circunferencia resaltada. Pueden surgir en cualquier iteración. Origen: 0.</p>
+        <img src="assets/images/Incremento.jpeg" />
+      </li>
+      <li>
+          <p>U Incrementado o ampliación de un OU Directo o Indirecto con uno o más OU Incremento. Pueden surgir en cualquier iteración excepto en la 1. Origen: 2 o más. Aspecto: Circunferencia negra que engloba una media circunferencia resaltada.</p>
+          <img src="assets/images/Incrementado.png" />
+        </li>
+        <li>
+            <p>OU Reutilizado u OU realizado previamente en el mismo o en otro proyecto. Pueden surgir en cualquier iteración. Origen:
+                0 o 1 (en una división). Aspecto: Doble circunferencia negra.</p>
+            <img src="assets/images/Reutilizado.png" />
+          </li>
+    </ul>
 
+    <footer class="mastfoot mt-auto">
+      <div class="inner">
+        <p>Página creada por <a href="https://twitter.com/u_odriozola">Unai Odriozola</a></p>
+      </div>
+    </footer>
+  </div>
+</body>

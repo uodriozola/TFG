@@ -23,6 +23,7 @@
         <label for="repeatInput">Repeat password:</label>
         <input type="password" class="form-control" id="repeatInput" formControlName="repeat" name="repeat">
       </div>
+      <div id="error" *ngIf='error'>{{error}}</div>
     </div>
   
     <div class="modal-footer">

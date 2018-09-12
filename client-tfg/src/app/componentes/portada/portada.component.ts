@@ -67,13 +67,6 @@ export class PortadaComponent implements OnInit {
 
     modalRef.result.then((result) => {
       console.log(result);
-      this.usuarioService.addUsuario(result).subscribe(res => {
-        if (!res) {
-          alert('Error en el servidor');
-        } else {
-          console.log('Usuario creado correctamente');
-        }
-      });
     }).catch((error) => {
       if (error !== 'Modal cerrado') {
         console.log('Ha ocurrido un error');

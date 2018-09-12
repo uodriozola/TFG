@@ -16,3 +16,7 @@
 .close {
     color: white;
 }
+
+#error {
+    color: red;
+}
