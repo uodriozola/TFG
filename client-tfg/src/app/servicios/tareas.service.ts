@@ -17,13 +17,13 @@ export class TareasService {
   // En función de las tareas realizadas devuelve el color del nodo
   public colorTarea(tareas: Tareas): String {
     if (tareas.finalizado.realizado) {
-      return '#898584';
+      return '#784212';
     } else if (tareas.a3.realizado) {
-      return '#C2BDBB';
+      return '#D35400';
     } else if (tareas.a2.realizado) {
-      return '#E2DEDD';
+      return '#F39C12';
     } else if (tareas.a1.realizado) {
-      return '#F7EFEE';
+      return '#F7DC6F';
     } else {
       return '#FFFFFF';
     }
